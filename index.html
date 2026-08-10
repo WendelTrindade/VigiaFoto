@@ -116,23 +116,42 @@
       overflow: hidden;
       border: 2px solid #262626;
       aspect-ratio: 3/4;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    video, canvas { width: 100%; height: 100%; object-fit: cover; }
+    video, canvas, img { width: 100%; height: 100%; object-fit: cover; }
+
+    .rec-status {
+      position: absolute; top: 15px; left: 15px;
+      background: rgba(220, 38, 38, 0.9); color: white;
+      padding: 6px 12px; border-radius: 20px; font-weight: 800;
+      font-size: 0.8rem; display: none; align-items: center; gap: 6px;
+      z-index: 5;
+    }
+    .rec-dot { width: 10px; height: 10px; background: white; border-radius: 50%; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
 
     .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-group-main { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
     .btn {
       width: 100%;
-      padding: 15px;
+      padding: 15px 10px;
       border: none;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .btn-capture { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #000; }
+    .btn-photo { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #000; }
+    .btn-video { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; }
+    .btn-stop { background: #eab308; color: #000; grid-column: span 2; }
     .btn-confirm { background: #16a34a; color: #fff; }
     .btn-cancel { background: #dc2626; color: #fff; }
 
@@ -209,13 +228,23 @@
     </div>
 
     <div class="preview-card">
-      <video id="video" autoplay playsinline></video>
-      <canvas id="canvas" style="display: none;"></canvas>
+      <div class="rec-status" id="recBadge"><div class="rec-dot"></div> GRAVANDO VÍDEO...</div>
+      <video id="videoSource" autoplay playsinline style="display:none;"></video>
+      <canvas id="canvasDisplay"></canvas>
+      <img id="photoResult" style="display: none;" />
+      <video id="videoResult" controls style="display: none;"></video>
     </div>
 
     <div class="actions">
-      <button id="btnCapture" class="btn btn-capture">📸 REGISTRAR PONTO</button>
-      <div id="confirmGroup" style="display: none; flex-direction: column; gap: 10px;">
+      <!-- Botões de Ação Principal -->
+      <div id="mainControls" class="btn-group-main">
+        <button id="btnTakePhoto" class="btn btn-photo">📸 TIRAR FOTO</button>
+        <button id="btnStartRecord" class="btn btn-video">🎥 GRAVAR VÍDEO</button>
+        <button id="btnStopRecord" class="btn btn-stop" style="display: none;">⏹️ PARAR GRAVAÇÃO</button>
+      </div>
+
+      <!-- Botões de Confirmação e Download -->
+      <div id="confirmControls" style="display: none; flex-direction: column; gap: 10px;">
         <button id="btnConfirmSave" class="btn btn-confirm">✅ CONFIRMAR & SALVAR</button>
         <button id="btnCancelRetake" class="btn btn-cancel">🔄 CANCELAR E REPETIR</button>
       </div>
@@ -235,7 +264,7 @@
           <label>Senha do Administrador:</label>
           <input type="password" id="adminPass" placeholder="Digite a senha">
         </div>
-        <button class="btn btn-capture" id="btnLoginAdmin">Acessar Painel</button>
+        <button class="btn btn-photo" id="btnLoginAdmin">Acessar Painel</button>
       </div>
 
       <div id="adminBody" style="display: none;">
@@ -273,14 +302,29 @@
     let currentVigia = dbVigias[0];
     let gpsAddress = 'LOCALIZANDO GPS...';
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const btnCapture = document.getElementById('btnCapture');
+    const videoSource = document.getElementById('videoSource');
+    const canvas = document.getElementById('canvasDisplay');
+    const ctx = canvas.getContext('2d');
+    const photoResult = document.getElementById('photoResult');
+    const videoResult = document.getElementById('videoResult');
+
+    const btnTakePhoto = document.getElementById('btnTakePhoto');
+    const btnStartRecord = document.getElementById('btnStartRecord');
+    const btnStopRecord = document.getElementById('btnStopRecord');
     const btnConfirmSave = document.getElementById('btnConfirmSave');
     const btnCancelRetake = document.getElementById('btnCancelRetake');
-    const confirmGroup = document.getElementById('confirmGroup');
+    
+    const mainControls = document.getElementById('mainControls');
+    const confirmControls = document.getElementById('confirmControls');
+    const recBadge = document.getElementById('recBadge');
     const searchVigia = document.getElementById('searchVigia');
     const vigiasList = document.getElementById('vigiasList');
+
+    let mediaRecorder;
+    let recordedChunks = [];
+    let recordedBlob = null;
+    let captureType = null; // 'photo' ou 'video'
+    let isLoopActive = true;
 
     function initApp() {
       saveDB();
@@ -332,13 +376,21 @@
     async function initCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
-          audio: false
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: true
         });
-        video.srcObject = stream;
+        videoSource.srcObject = stream;
+        videoSource.play();
+        requestAnimationFrame(renderLoop);
       } catch (e) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        video.srcObject = stream;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          videoSource.srcObject = stream;
+          videoSource.play();
+          requestAnimationFrame(renderLoop);
+        } catch(err) {
+          alert("Não foi possível acessar a câmera ou microfone.");
+        }
       }
     }
 
@@ -370,16 +422,20 @@
       ctx.fillText(text, x, y);
     }
 
-    btnCapture.addEventListener('click', () => {
-      const ctx = canvas.getContext('2d');
-      const w = video.videoWidth || 1280;
-      const h = video.videoHeight || 960;
+    // Desenha o vídeo e a estampa em tempo real no Canvas
+    function renderLoop() {
+      if (!isLoopActive) return;
 
-      canvas.width = w;
-      canvas.height = h;
-      ctx.drawImage(video, 0, 0, w, h);
+      const w = videoSource.videoWidth || 1280;
+      const h = videoSource.videoHeight || 720;
 
-      // Altura responsiva estendida do rodapé (28% da imagem para dar respiro)
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+
+      ctx.drawImage(videoSource, 0, 0, w, h);
+
       const footerH = h * 0.28;
       const footerY = h - footerH;
 
@@ -393,67 +449,133 @@
       const contentWidth = w - (padX * 2);
 
       const now = new Date();
-      const horaStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const horaStr = String(now.getHours()).padStart(2, '0') + ':' + 
+                      String(now.getMinutes()).padStart(2, '0') + ':' + 
+                      String(now.getSeconds()).padStart(2, '0');
       const dataStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
-      // 1. Hora em Destaque (Topo Esquerdo)
+      // Hora
       ctx.fillStyle = '#eab308';
       ctx.font = `900 ${footerH * 0.24}px -apple-system, sans-serif`;
       ctx.fillText(horaStr, padX, footerY + (footerH * 0.25));
 
-      // 2. Data em Linha Exclusiva Abaixo da Hora
+      // Data abaixo da hora
       ctx.fillStyle = '#a3a3a3';
       ctx.font = `700 ${footerH * 0.11}px -apple-system, sans-serif`;
       ctx.fillText(`DATA: ${dataStr}`, padX, footerY + (footerH * 0.38));
 
-      // 3. Marca Guardião no Topo Direito
+      // Marca Guardião
       ctx.fillStyle = '#ffffff';
       ctx.font = `900 ${footerH * 0.16}px -apple-system, sans-serif`;
       ctx.textAlign = 'right';
       ctx.fillText('GUARDIÃO', w - padX, footerY + (footerH * 0.25));
       ctx.textAlign = 'left';
 
-      // Linha Divisória Separando Data/Hora dos Dados
+      // Linha Separadora
       ctx.fillStyle = '#262626';
       ctx.fillRect(padX, footerY + (footerH * 0.44), contentWidth, 2);
 
-      // 4. Serviço e Posto
+      // Serviço e Posto
       const servicoPosto = `${currentVigia.servico} - ${currentVigia.posto}`;
       drawFitText(ctx, servicoPosto, padX, footerY + (footerH * 0.58), contentWidth, footerH * 0.11, '#eab308', '800');
 
-      // 5. Agente / Colaborador
+      // Agente
       const agenteText = `COLABORADOR: ${currentVigia.nome}`;
       drawFitText(ctx, agenteText, padX, footerY + (footerH * 0.73), contentWidth, footerH * 0.10, '#ffffff', '700');
 
-      // 6. Local / GPS
+      // Local
       const localText = `LOCAL: ${currentVigia.endereco || gpsAddress}`;
       drawFitText(ctx, localText, padX, footerY + (footerH * 0.88), contentWidth, footerH * 0.09, '#d4d4d4', '600');
 
-      video.style.display = 'none';
-      canvas.style.display = 'block';
-      btnCapture.style.display = 'none';
-      confirmGroup.style.display = 'flex';
+      requestAnimationFrame(renderLoop);
+    }
+
+    // AÇÃO 1: TIRAR FOTO
+    btnTakePhoto.addEventListener('click', () => {
+      captureType = 'photo';
+      const imageData = canvas.toDataURL('image/jpeg', 0.95);
+      photoResult.src = imageData;
+
+      canvas.style.display = 'none';
+      photoResult.style.display = 'block';
+      
+      mainControls.style.display = 'none';
+      confirmControls.style.display = 'flex';
+      isLoopActive = false;
     });
 
+    // AÇÃO 2: GRAVAR VÍDEO
+    btnStartRecord.addEventListener('click', () => {
+      captureType = 'video';
+      recordedChunks = [];
+
+      const canvasStream = canvas.captureStream(30);
+      const audioTrack = videoSource.srcObject.getAudioTracks()[0];
+      if (audioTrack) canvasStream.addTrack(audioTrack);
+
+      mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+        videoResult.src = URL.createObjectURL(recordedBlob);
+
+        canvas.style.display = 'none';
+        videoResult.style.display = 'block';
+        
+        mainControls.style.display = 'none';
+        confirmControls.style.display = 'flex';
+        isLoopActive = false;
+      };
+
+      mediaRecorder.start();
+      recBadge.style.display = 'flex';
+      btnTakePhoto.style.display = 'none';
+      btnStartRecord.style.display = 'none';
+      btnStopRecord.style.display = 'flex';
+    });
+
+    btnStopRecord.addEventListener('click', () => {
+      mediaRecorder.stop();
+      recBadge.style.display = 'none';
+      btnStopRecord.style.display = 'none';
+      btnTakePhoto.style.display = 'flex';
+      btnStartRecord.style.display = 'flex';
+    });
+
+    // CONFIRMAR E SALVAR
     btnConfirmSave.addEventListener('click', () => {
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/jpeg', 0.95);
-      a.download = `GUARDIAO_PONTO_${Date.now()}.jpg`;
+      if (captureType === 'photo') {
+        a.href = photoResult.src;
+        a.download = `GUARDIAO_PONTO_FOTO_${Date.now()}.jpg`;
+      } else {
+        a.href = URL.createObjectURL(recordedBlob);
+        a.download = `GUARDIAO_PONTO_VIDEO_${Date.now()}.webm`;
+      }
       a.click();
-
-      video.style.display = 'block';
-      canvas.style.display = 'none';
-      btnCapture.style.display = 'flex';
-      confirmGroup.style.display = 'none';
+      resetPreview();
     });
 
-    btnCancelRetake.addEventListener('click', () => {
-      video.style.display = 'block';
-      canvas.style.display = 'none';
-      btnCapture.style.display = 'flex';
-      confirmGroup.style.display = 'none';
-    });
+    // CANCELAR E REPETIR
+    btnCancelRetake.addEventListener('click', resetPreview);
 
+    function resetPreview() {
+      photoResult.style.display = 'none';
+      videoResult.style.display = 'none';
+      canvas.style.display = 'block';
+      
+      confirmControls.style.display = 'none';
+      mainControls.style.display = 'grid';
+      
+      isLoopActive = true;
+      requestAnimationFrame(renderLoop);
+    }
+
+    // Modal Admin
     const adminModal = document.getElementById('adminModal');
     document.getElementById('btnOpenAdmin').addEventListener('click', () => adminModal.style.display = 'block');
     document.getElementById('btnCloseAdmin').addEventListener('click', () => adminModal.style.display = 'none');
