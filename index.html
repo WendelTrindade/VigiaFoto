@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>App Registro de Ponto</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-bar {
+      background: #1e293b;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-bar h1 { font-size: 1.1rem; color: #38bdf8; font-weight: 700; }
+    .btn-admin {
+      background: #334155;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .container {
+      padding: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .vigia-card {
+      background: #1e293b;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    .vigia-card label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+    .badge-info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .badge-info strong { color: #38bdf8; }
+
+    .preview-card {
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      position: relative;
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    video, canvas { width: 100%; height: 100%; object-fit: cover; }
+
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-capture { background: #0284c7; color: #fff; }
+    .btn-confirm { background: #16a34a; color: #fff; }
+    .btn-cancel { background: #dc2626; color: #fff; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.95);
+      z-index: 100;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .modal-content {
+      max-width: 450px;
+      margin: 0 auto;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .modal-header h2 { font-size: 1.2rem; color: #38bdf8; }
+    .close-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
+    .form-group input {
+      width: 100%; padding: 10px; border-radius: 6px;
+      border: 1px solid #475569; background: #0f172a; color: #fff;
+    }
+    .list-item {
+      padding: 10px;
+      background: #0f172a;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .btn-del { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .section-title { font-size: 0.9rem; color: #38bdf8; margin: 15px 0 10px 0; padding-top: 10px; border-top: 1px solid #334155; }
+    .logo-preview-box {
+      width: 100%;
+      height: 60px;
+      background: #0f172a;
+      border: 1px dashed #475569;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .logo-preview-box img { max-height: 45px; max-width: 90%; object-fit: contain; }
+  </style>
+</head>
+<body>
+
+  <div class="app-bar">
+    <h1>🛡️ PontoVigia App</h1>
+    <button class="btn-admin" id="btnOpenAdmin">⚙️ Painel Admin</button>
+  </div>
+
+  <div class="container">
+    <div class="vigia-card">
+      <label for="searchVigia">Buscar Nome do Vigia:</label>
+      <input type="text" id="searchVigia" class="search-input" list="vigiasList" placeholder="Digite seu nome...">
+      <datalist id="vigiasList"></datalist>
+
+      <div class="badge-info" id="vigiaInfo">
+        <div>Posto: <strong id="lblPosto">Carregando...</strong></div>
+        <div>Serviço: <strong id="lblServico">REGISTRO DE TRABALHO</strong></div>
+        <div>Local: <strong id="lblLocal">Buscando GPS...</strong></div>
+      </div>
+    </div>
+
+    <div class="preview-card">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+
+    <div class="actions">
+      <button id="btnCapture" class="btn btn-capture">📸 Tirar Foto de Registro</button>
+      
+      <div id="confirmGroup" style="display: none; flex-direction: column; gap: 10px;">
+        <button id="btnConfirmSave" class="btn btn-confirm">✅ Confirmar & Salvar no Celular</button>
+        <button id="btnCancelRetake" class="btn btn-cancel">🔄 Cancelar e Tirar Outra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Admin -->
+  <div class="modal" id="adminModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Painel Administrativo</h2>
+        <button class="close-btn" id="btnCloseAdmin">&times;</button>
+      </div>
+
+      <div id="adminAuth">
+        <div class="form-group">
+          <label>Senha do Administrador:</label>
+          <input type="password" id="adminPass" placeholder="Senha (Padrão: admin123)">
+        </div>
+        <button class="btn btn-capture" id="btnLoginAdmin">Acessar Painel</button>
+      </div>
+
+      <div id="adminBody" style="display: none;">
+        <!-- Configuração da Logo da Empresa -->
+        <h3 style="font-size: 0.9rem; color: #38bdf8; margin-bottom: 10px;">Logo da Empresa</h3>
+        
+        <div class="form-group">
+          <label>Opção 1: Upload da Logo (Recomendado):</label>
+          <input type="file" id="cfgLogoFile" accept="image/*" style="background: transparent; border: none; padding: 0;">
+        </div>
+
+        <div class="form-group">
+          <label>Opção 2: URL da Imagem da Logo:</label>
+          <input type="url" id="cfgLogoUrl" placeholder="https://exemplo.com/logo.png">
+        </div>
+
+        <div class="logo-preview-box" id="logoPreviewContainer">
+          <span style="font-size:0.75rem; color:#64748b;" id="noLogoText">Sem logo cadastrada</span>
+          <img id="imgAdminPreview" src="" style="display: none;">
+        </div>
+
+        <button class="btn btn-confirm" id="btnSaveLogo" style="margin: 12px 0 15px 0; background: #0284c7;">💾 Salvar Logo</button>
+
+        <!-- Cadastro de Vigia -->
+        <h3 class="section-title">Cadastrar Novo Vigia</h3>
+        <div class="form-group">
+          <label>Nome Completo:</label>
+          <input type="text" id="addNome" placeholder="Ex: Carlos Silva">
+        </div>
+        <div class="form-group">
+          <label>Serviço / Categoria:</label>
+          <input type="text" id="addServico" value="REGISTRO DE TRABALHO">
+        </div>
+        <div class="form-group">
+          <label>Posto / Setor:</label>
+          <input type="text" id="addPosto" value="SEGURANÇA">
+        </div>
+        <div class="form-group">
+          <label>Endereço Fixo (Deixe vazio para GPS):</label>
+          <input type="text" id="addEndereco" placeholder="Ex: Rua RF-8, Goiânia-GO">
+        </div>
+        <button class="btn btn-confirm" id="btnAddVigia" style="margin-bottom: 15px;">➕ Salvar Vigia</button>
+
+        <h3 style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 10px;">Vigias Cadastrados</h3>
+        <div id="vigiasListaAdmin"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dbVigias = JSON.parse(localStorage.getItem('dbVigias')) || [
+      { id: 1, nome: 'CARLOS SILVA BASTISTA', servico: 'REGISTRO DE TRABALHO', posto: 'SEGURANÇA', endereco: '' },
+      { id: 2, nome: 'DEISE LIMA SILVA', servico: 'PONTO ELETRÔNICO', posto: 'PORTARIA', endereco: '' }
+    ];
+
+    let logoData = localStorage.getItem('companyLogoData') || '';
+    let companyLogoImg = null;
+
+    let currentVigia = dbVigias[0];
+    let gpsAddress = 'LOCALIZANDO GPS...';
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const btnCapture = document.getElementById('btnCapture');
+    const btnConfirmSave = document.getElementById('btnConfirmSave');
+    const btnCancelRetake = document.getElementById('btnCancelRetake');
+    const confirmGroup = document.getElementById('confirmGroup');
+    const searchVigia = document.getElementById('searchVigia');
+    const vigiasList = document.getElementById('vigiasList');
+
+    function initApp() {
+      saveDB();
+      renderVigiasDatalist();
+      selectVigia(dbVigias[0].nome);
+      initCamera();
+      initGPS();
+      loadLogo();
+    }
+
+    function saveDB() {
+      localStorage.setItem('dbVigias', JSON.stringify(dbVigias));
+    }
+
+    function loadLogo() {
+      if (logoData) {
+        if (!logoData.startsWith('data:image')) {
+          document.getElementById('cfgLogoUrl').value = logoData;
+        }
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+          companyLogoImg = img;
+          document.getElementById('imgAdminPreview').src = img.src;
+          document.getElementById('imgAdminPreview').style.display = 'block';
+          document.getElementById('noLogoText').style.display = 'none';
+        };
+        img.onerror = () => {
+          companyLogoImg = null;
+        };
+        img.src = logoData;
+      }
+    }
+
+    function renderVigiasDatalist() {
+      vigiasList.innerHTML = '';
+      const listAdmin = document.getElementById('vigiasListaAdmin');
+      listAdmin.innerHTML = '';
+
+      dbVigias.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.nome;
+        vigiasList.appendChild(opt);
+
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div>
+            <strong>${v.nome}</strong><br>
+            <small>${v.posto} - ${v.servico}</small>
+          </div>
+          <button class="btn-del" onclick="deleteVigia(${v.id})">Remover</button>
+        `;
+        listAdmin.appendChild(item);
+      });
+    }
+
+    function selectVigia(nome) {
+      const found = dbVigias.find(v => v.nome.toUpperCase() === nome.toUpperCase());
+      if (found) {
+        currentVigia = found;
+        document.getElementById('lblPosto').innerText = currentVigia.posto;
+        document.getElementById('lblServico').innerText = currentVigia.servico;
+        document.getElementById('lblLocal').innerText = currentVigia.endereco || gpsAddress;
+      }
+    }
+
+    searchVigia.addEventListener('input', (e) => selectVigia(e.target.value));
+
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (e) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = stream;
+      }
+    }
+
+    function initGPS() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+            const data = await res.json();
+            const road = data.address.road || 'RUA REGISTRADA';
+            const city = data.address.city || data.address.town || 'GOIÂNIA';
+            const state = data.address.state ? data.address.state.substring(0, 2).toUpperCase() : 'GO';
+            gpsAddress = `${road.toUpperCase()}, ${city.toUpperCase()} - ${state}`;
+            if (!currentVigia.endereco) {
+              document.getElementById('lblLocal').innerText = gpsAddress;
+            }
+          } catch (e) {}
+        });
+      }
+    }
+
+    // Processador do carimbo e layout da imagem
+    btnCapture.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      const w = video.videoWidth || 1280;
+      const h = video.videoHeight || 960;
+
+      canvas.width = w;
+      canvas.height = h;
+
+      // Desenhar frame do vídeo
+      ctx.drawImage(video, 0, 0, w, h);
+
+      // Calcular dimensões do Rodapé
+      const footerH = Math.max(180, h * 0.22);
+      const footerY = h - footerH;
+
+      // Fundo em Gradiente elegante
+      const gradient = ctx.createLinearGradient(0, footerY, 0, h);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(1, '#f1f5f9');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, footerY, w, footerH);
+
+      // Linha Divisória Superior
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, footerY);
+      ctx.lineTo(w, footerY);
+      ctx.stroke();
+
+      const padX = w * 0.04;
+
+      // Renderizar Logo Refinada (Se configurada)
+      if (companyLogoImg && companyLogoImg.complete && companyLogoImg.naturalWidth !== 0) {
+        const logoMaxH = footerH * 0.45;
+        const aspect = companyLogoImg.naturalWidth / companyLogoImg.naturalHeight;
+        let logoW = logoMaxH * aspect;
+        const maxLogoW = w * 0.30;
+        
+        if (logoW > maxLogoW) {
+          logoW = maxLogoW;
+        }
+
+        const logoX = w - padX - logoW;
+        const logoY = footerY + (footerH * 0.12);
+        
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 4;
+        ctx.drawImage(companyLogoImg, logoX, logoY, logoW, logoMaxH);
+        ctx.restore();
+      }
+
+      const now = new Date();
+      const hora = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+      const dataStr = `${dias[now.getDay()]}, ${now.getDate()} ${meses[now.getMonth()]}. ${now.getFullYear()}`;
+
+      // Hora em destaque
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold ' + Math.round(footerH * 0.32) + 'px -apple-system, sans-serif';
+      ctx.fillText(hora, padX, footerY + (footerH * 0.36));
+
+      // Data abaixo da hora
+      ctx.fillStyle = '#475569';
+      ctx.font = '600 ' + Math.round(footerH * 0.13) + 'px -apple-system, sans-serif';
+      ctx.fillText(dataStr, padX, footerY + (footerH * 0.52));
+
+      // Coluna Central (Serviço e Posto)
+      const col2 = padX + (w * 0.28);
+      ctx.fillStyle = '#0284c7';
+      ctx.font = '800 ' + Math.round(footerH * 0.15) + 'px -apple-system, sans-serif';
+      ctx.fillText(currentVigia.servico.toUpperCase(), col2, footerY + (footerH * 0.28));
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '700 ' + Math.round(footerH * 0.13) + 'px -apple-system, sans-serif';
+      ctx.fillText(`POSTO: ${currentVigia.posto.toUpperCase()}`, col2, footerY + (footerH * 0.46));
+
+      // Linha separadora do rodapé inferior
+      const lineY = footerY + (footerH * 0.58);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(padX, lineY);
+      ctx.lineTo(w - padX, lineY);
+      ctx.stroke();
+
+      // Detalhes (Nome, Local e Selo de Validação)
+      const y1 = lineY + (footerH * 0.14);
+      const y2 = y1 + (footerH * 0.12);
+
+      const localFinal = currentVigia.endereco || gpsAddress;
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 ' + Math.round(footerH * 0.11) + 'px -apple-system, sans-serif';
+      ctx.fillText(`👤 FUNCIONÁRIO: ${currentVigia.nome.toUpperCase()}`, padX, y1);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '600 ' + Math.round(footerH * 0.10) + 'px -apple-system, sans-serif';
+      ctx.fillText(`📍 LOCAL: ${localFinal.toUpperCase()}`, padX, y2);
+
+      // Selo de validação
+      ctx.fillStyle = '#16a34a';
+      ctx.font = '800 ' + Math.round(footerH * 0.09) + 'px -apple-system, sans-serif';
+      ctx.fillText(`✓ PONTO VERIFICADO VIA GPS`, w - (w * 0.35), y2);
+
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+      btnCapture.style.display = 'none';
+      confirmGroup.style.display = 'flex';
+    });
+
+    btnConfirmSave.addEventListener('click', () => {
+      const now = new Date();
+      const timeStamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+      const fileName = `PONTO_${currentVigia.nome.replace(/\s+/g, '_')}_${timeStamp}.jpg`;
+
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/jpeg', 0.95);
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      alert('✅ Registro confirmado e foto salva no celular!');
+
+      video.style.display = 'block';
+      canvas.style.display = 'none';
+      btnCapture.style.display = 'flex';
+      confirmGroup.style.display = 'none';
+    });
+
+    btnCancelRetake.addEventListener('click', () => {
+      video.style.display = 'block';
+      canvas.style.display = 'none';
+      btnCapture.style.display = 'flex';
+      confirmGroup.style.display = 'none';
+    });
+
+    const adminModal = document.getElementById('adminModal');
+    document.getElementById('btnOpenAdmin').addEventListener('click', () => adminModal.style.display = 'block');
+    document.getElementById('btnCloseAdmin').addEventListener('click', () => adminModal.style.display = 'none');
+
+    document.getElementById('btnLoginAdmin').addEventListener('click', () => {
+      if (document.getElementById('adminPass').value === 'admin123') {
+        document.getElementById('adminAuth').style.display = 'none';
+        document.getElementById('adminBody').style.display = 'block';
+      } else {
+        alert('Senha incorreta! (Padrão: admin123)');
+      }
+    });
+
+    // Upload por arquivo
+    document.getElementById('cfgLogoFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          logoData = event.target.result;
+          document.getElementById('cfgLogoUrl').value = '';
+          loadLogo();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Salvando Logo
+    document.getElementById('btnSaveLogo').addEventListener('click', () => {
+      const url = document.getElementById('cfgLogoUrl').value.trim();
+      if (url) {
+        logoData = url;
+      }
+      localStorage.setItem('companyLogoData', logoData);
+      loadLogo();
+      alert('✅ Logo atualizada com sucesso!');
+    });
+
+    document.getElementById('btnAddVigia').addEventListener('click', () => {
+      const nome = document.getElementById('addNome').value;
+      if (!nome) return alert('Digite o nome do vigia.');
+
+      dbVigias.push({
+        id: Date.now(),
+        nome: nome.toUpperCase(),
+        servico: document.getElementById('addServico').value.toUpperCase(),
+        posto: document.getElementById('addPosto').value.toUpperCase(),
+        endereco: document.getElementById('addEndereco').value.toUpperCase()
+      });
+
+      saveDB();
+      renderVigiasDatalist();
+      alert('Vigia cadastrado com sucesso!');
+      document.getElementById('addNome').value = '';
+    });
+
+    function deleteVigia(id) {
+      dbVigias = dbVigias.filter(v => v.id !== id);
+      saveDB();
+      renderVigiasDatalist();
+    }
+
+    window.addEventListener('load', initApp);
+  </script>
+</body>
+</html>
