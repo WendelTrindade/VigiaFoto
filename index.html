@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>App Registro de Ponto</title>
+  <title>GUARDIÃO - Registro de Ponto</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0d0d0d">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #0f172a;
+      background: #0d0d0d;
       color: #f8fafc;
       min-height: 100vh;
       display: flex;
@@ -21,25 +21,42 @@
     }
 
     .app-bar {
-      background: #1e293b;
+      background: #171717;
       padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #334155;
+      border-bottom: 2px solid #eab308;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .app-bar h1 { font-size: 1.1rem; color: #38bdf8; font-weight: 700; }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-title h1 {
+      font-size: 1.2rem;
+      color: #ffffff;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .brand-title span {
+      font-size: 0.65rem;
+      color: #eab308;
+      display: block;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
     .btn-admin {
-      background: #334155;
-      color: #38bdf8;
-      border: 1px solid #475569;
+      background: #262626;
+      color: #eab308;
+      border: 1px solid #eab308;
       padding: 6px 14px;
       border-radius: 20px;
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
     }
 
@@ -55,17 +72,16 @@
     }
 
     .vigia-card {
-      background: #1e293b;
+      background: #171717;
       padding: 14px;
       border-radius: 12px;
-      border: 1px solid #334155;
+      border: 1px solid #262626;
     }
     .vigia-card label {
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: #eab308;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 700;
+      font-weight: 800;
       display: block;
       margin-bottom: 6px;
     }
@@ -73,31 +89,32 @@
       width: 100%;
       padding: 12px;
       border-radius: 8px;
-      border: 1px solid #475569;
-      background: #0f172a;
+      border: 1px solid #404040;
+      background: #0d0d0d;
       color: #fff;
       font-size: 1rem;
       outline: none;
     }
+
     .badge-info {
       margin-top: 10px;
       padding: 10px;
-      background: #0f172a;
+      background: #0d0d0d;
       border-radius: 8px;
-      font-size: 0.8rem;
-      color: #cbd5e1;
+      font-size: 0.85rem;
+      color: #d4d4d4;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      border-left: 3px solid #dc2626;
     }
-    .badge-info strong { color: #38bdf8; }
+    .badge-info strong { color: #ffffff; }
 
     .preview-card {
       background: #000;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid #334155;
-      position: relative;
+      border: 2px solid #262626;
       aspect-ratio: 3/4;
       display: flex;
       align-items: center;
@@ -112,14 +129,10 @@
       border: none;
       border-radius: 10px;
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
     }
-    .btn-capture { background: #0284c7; color: #fff; }
+    .btn-capture { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #000; }
     .btn-confirm { background: #16a34a; color: #fff; }
     .btn-cancel { background: #dc2626; color: #fff; }
 
@@ -127,7 +140,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(0, 0, 0, 0.92);
       z-index: 100;
       padding: 20px;
       overflow-y: auto;
@@ -135,10 +148,10 @@
     .modal-content {
       max-width: 450px;
       margin: 0 auto;
-      background: #1e293b;
+      background: #171717;
       padding: 20px;
       border-radius: 12px;
-      border: 1px solid #334155;
+      border: 1px solid #eab308;
     }
     .modal-header {
       display: flex;
@@ -146,58 +159,52 @@
       align-items: center;
       margin-bottom: 15px;
     }
-    .modal-header h2 { font-size: 1.2rem; color: #38bdf8; }
-    .close-btn { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; }
+    .modal-header h2 { font-size: 1.2rem; color: #eab308; }
+    .close-btn { background: none; border: none; color: #a3a3a3; font-size: 1.5rem; cursor: pointer; }
     
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
+    .form-group label { display: block; font-size: 0.75rem; color: #a3a3a3; margin-bottom: 4px; }
     .form-group input {
       width: 100%; padding: 10px; border-radius: 6px;
-      border: 1px solid #475569; background: #0f172a; color: #fff;
+      border: 1px solid #404040; background: #0d0d0d; color: #fff;
     }
     .list-item {
       padding: 10px;
-      background: #0f172a;
+      background: #0d0d0d;
       border-radius: 6px;
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 0.85rem;
+      border: 1px solid #262626;
     }
-    .btn-del { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-    .section-title { font-size: 0.9rem; color: #38bdf8; margin: 15px 0 10px 0; padding-top: 10px; border-top: 1px solid #334155; }
-    .logo-preview-box {
-      width: 100%;
-      height: 60px;
-      background: #0f172a;
-      border: 1px dashed #475569;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 8px;
-    }
-    .logo-preview-box img { max-height: 45px; max-width: 90%; object-fit: contain; }
+    .btn-del { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <div class="app-bar">
-    <h1>🛡️ PontoVigia App</h1>
-    <button class="btn-admin" id="btnOpenAdmin">⚙️ Painel Admin</button>
+    <div class="brand-title">
+      <div style="font-size: 1.4rem;">🛡️</div>
+      <div>
+        <h1>GUARDIÃO</h1>
+        <span>SERVIÇOS DE QUALIDADE</span>
+      </div>
+    </div>
+    <button class="btn-admin" id="btnOpenAdmin">⚙️ Admin</button>
   </div>
 
   <div class="container">
     <div class="vigia-card">
-      <label for="searchVigia">Buscar Nome do Vigia:</label>
+      <label for="searchVigia">NOME DO COLABORADOR:</label>
       <input type="text" id="searchVigia" class="search-input" list="vigiasList" placeholder="Digite seu nome...">
       <datalist id="vigiasList"></datalist>
 
-      <div class="badge-info" id="vigiaInfo">
-        <div>Posto: <strong id="lblPosto">Carregando...</strong></div>
-        <div>Serviço: <strong id="lblServico">REGISTRO DE TRABALHO</strong></div>
-        <div>Local: <strong id="lblLocal">Buscando GPS...</strong></div>
+      <div class="badge-info">
+        <div>Posto: <strong id="lblPosto">POSTO CENTRAL</strong></div>
+        <div>Serviço: <strong id="lblServico">GUARDIÃO SEGURANÇA</strong></div>
+        <div>Local: <strong id="lblLocal">Obtendo localização...</strong></div>
       </div>
     </div>
 
@@ -207,11 +214,10 @@
     </div>
 
     <div class="actions">
-      <button id="btnCapture" class="btn btn-capture">📸 Tirar Foto de Registro</button>
-      
+      <button id="btnCapture" class="btn btn-capture">📸 REGISTRAR PONTO</button>
       <div id="confirmGroup" style="display: none; flex-direction: column; gap: 10px;">
-        <button id="btnConfirmSave" class="btn btn-confirm">✅ Confirmar & Salvar no Celular</button>
-        <button id="btnCancelRetake" class="btn btn-cancel">🔄 Cancelar e Tirar Outra</button>
+        <button id="btnConfirmSave" class="btn btn-confirm">✅ CONFIRMAR & SALVAR</button>
+        <button id="btnCancelRetake" class="btn btn-cancel">🔄 CANCELAR E REPETIR</button>
       </div>
     </div>
   </div>
@@ -220,74 +226,50 @@
   <div class="modal" id="adminModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Painel Administrativo</h2>
+        <h2>Painel Guardião Gestor</h2>
         <button class="close-btn" id="btnCloseAdmin">&times;</button>
       </div>
 
       <div id="adminAuth">
         <div class="form-group">
           <label>Senha do Administrador:</label>
-          <input type="password" id="adminPass" placeholder="Senha (Padrão: admin123)">
+          <input type="password" id="adminPass" placeholder="Digite a senha">
         </div>
         <button class="btn btn-capture" id="btnLoginAdmin">Acessar Painel</button>
       </div>
 
       <div id="adminBody" style="display: none;">
-        <!-- Configuração da Logo da Empresa -->
-        <h3 style="font-size: 0.9rem; color: #38bdf8; margin-bottom: 10px;">Logo da Empresa</h3>
-        
-        <div class="form-group">
-          <label>Opção 1: Upload da Logo (Recomendado):</label>
-          <input type="file" id="cfgLogoFile" accept="image/*" style="background: transparent; border: none; padding: 0;">
-        </div>
-
-        <div class="form-group">
-          <label>Opção 2: URL da Imagem da Logo:</label>
-          <input type="url" id="cfgLogoUrl" placeholder="https://exemplo.com/logo.png">
-        </div>
-
-        <div class="logo-preview-box" id="logoPreviewContainer">
-          <span style="font-size:0.75rem; color:#64748b;" id="noLogoText">Sem logo cadastrada</span>
-          <img id="imgAdminPreview" src="" style="display: none;">
-        </div>
-
-        <button class="btn btn-confirm" id="btnSaveLogo" style="margin: 12px 0 15px 0; background: #0284c7;">💾 Salvar Logo</button>
-
-        <!-- Cadastro de Vigia -->
-        <h3 class="section-title">Cadastrar Novo Vigia</h3>
+        <h3 style="font-size: 0.9rem; color: #eab308; margin-bottom: 10px;">Cadastrar Novo Agente</h3>
         <div class="form-group">
           <label>Nome Completo:</label>
           <input type="text" id="addNome" placeholder="Ex: Carlos Silva">
         </div>
         <div class="form-group">
           <label>Serviço / Categoria:</label>
-          <input type="text" id="addServico" value="REGISTRO DE TRABALHO">
+          <input type="text" id="addServico" value="GUARDIÃO SEGURANÇA">
         </div>
         <div class="form-group">
           <label>Posto / Setor:</label>
-          <input type="text" id="addPosto" value="SEGURANÇA">
+          <input type="text" id="addPosto" value="POSTO CENTRAL">
         </div>
         <div class="form-group">
-          <label>Endereço Fixo (Deixe vazio para GPS):</label>
-          <input type="text" id="addEndereco" placeholder="Ex: Rua RF-8, Goiânia-GO">
+          <label>Endereço Fixo (Opcional):</label>
+          <input type="text" id="addEndereco" placeholder="Deixe em branco para usar GPS">
         </div>
-        <button class="btn btn-confirm" id="btnAddVigia" style="margin-bottom: 15px;">➕ Salvar Vigia</button>
+        <button class="btn btn-confirm" id="btnAddVigia" style="margin-bottom: 15px;">➕ Cadastrar Agente</button>
 
-        <h3 style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 10px;">Vigias Cadastrados</h3>
+        <h3 style="font-size: 0.9rem; color: #d4d4d4; margin-bottom: 10px;">Equipe Cadastrada</h3>
         <div id="vigiasListaAdmin"></div>
       </div>
     </div>
   </div>
 
   <script>
+    const ADMIN_PASSWORD = '28642155';
+
     let dbVigias = JSON.parse(localStorage.getItem('dbVigias')) || [
-      { id: 1, nome: 'CARLOS SILVA BASTISTA', servico: 'REGISTRO DE TRABALHO', posto: 'SEGURANÇA', endereco: '' },
-      { id: 2, nome: 'DEISE LIMA SILVA', servico: 'PONTO ELETRÔNICO', posto: 'PORTARIA', endereco: '' }
+      { id: 1, nome: 'CARLOS SILVA BATISTA', servico: 'GUARDIÃO SEGURANÇA', posto: 'POSTO CENTRAL', endereco: '' }
     ];
-
-    let logoData = localStorage.getItem('companyLogoData') || '';
-    let companyLogoImg = null;
-
     let currentVigia = dbVigias[0];
     let gpsAddress = 'LOCALIZANDO GPS...';
 
@@ -306,31 +288,10 @@
       selectVigia(dbVigias[0].nome);
       initCamera();
       initGPS();
-      loadLogo();
     }
 
     function saveDB() {
       localStorage.setItem('dbVigias', JSON.stringify(dbVigias));
-    }
-
-    function loadLogo() {
-      if (logoData) {
-        if (!logoData.startsWith('data:image')) {
-          document.getElementById('cfgLogoUrl').value = logoData;
-        }
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => {
-          companyLogoImg = img;
-          document.getElementById('imgAdminPreview').src = img.src;
-          document.getElementById('imgAdminPreview').style.display = 'block';
-          document.getElementById('noLogoText').style.display = 'none';
-        };
-        img.onerror = () => {
-          companyLogoImg = null;
-        };
-        img.src = logoData;
-      }
     }
 
     function renderVigiasDatalist() {
@@ -347,8 +308,8 @@
         item.className = 'list-item';
         item.innerHTML = `
           <div>
-            <strong>${v.nome}</strong><br>
-            <small>${v.posto} - ${v.servico}</small>
+            <strong style="color:#fff;">${v.nome}</strong><br>
+            <small style="color:#eab308;">${v.posto} - ${v.servico}</small>
           </div>
           <button class="btn-del" onclick="deleteVigia(${v.id})">Remover</button>
         `;
@@ -388,18 +349,27 @@
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
             const data = await res.json();
             const road = data.address.road || 'RUA REGISTRADA';
-            const city = data.address.city || data.address.town || 'GOIÂNIA';
-            const state = data.address.state ? data.address.state.substring(0, 2).toUpperCase() : 'GO';
-            gpsAddress = `${road.toUpperCase()}, ${city.toUpperCase()} - ${state}`;
+            const city = data.address.city || data.address.town || 'CIDADE';
+            gpsAddress = `${road.toUpperCase()}, ${city.toUpperCase()}`;
             if (!currentVigia.endereco) {
               document.getElementById('lblLocal').innerText = gpsAddress;
             }
-          } catch (e) {}
+          } catch (e) { gpsAddress = "GPS ATIVO (ENDEREÇO INDISPONÍVEL)"; }
         });
       }
     }
 
-    // Processador do carimbo e layout da imagem
+    function drawFitText(ctx, text, x, y, maxWidth, baseFontSize, fontColor, fontWeight = '700') {
+      let fontSize = baseFontSize;
+      ctx.font = `${fontWeight} ${fontSize}px -apple-system, sans-serif`;
+      while (ctx.measureText(text).width > maxWidth && fontSize > 12) {
+        fontSize -= 2;
+        ctx.font = `${fontWeight} ${fontSize}px -apple-system, sans-serif`;
+      }
+      ctx.fillStyle = fontColor;
+      ctx.fillText(text, x, y);
+    }
+
     btnCapture.addEventListener('click', () => {
       const ctx = canvas.getContext('2d');
       const w = video.videoWidth || 1280;
@@ -407,105 +377,57 @@
 
       canvas.width = w;
       canvas.height = h;
-
-      // Desenhar frame do vídeo
       ctx.drawImage(video, 0, 0, w, h);
 
-      // Calcular dimensões do Rodapé
-      const footerH = Math.max(180, h * 0.22);
+      // Altura responsiva estendida do rodapé (28% da imagem para dar respiro)
+      const footerH = h * 0.28;
       const footerY = h - footerH;
 
-      // Fundo em Gradiente elegante
-      const gradient = ctx.createLinearGradient(0, footerY, 0, h);
-      gradient.addColorStop(0, '#ffffff');
-      gradient.addColorStop(1, '#f1f5f9');
-      ctx.fillStyle = gradient;
+      ctx.fillStyle = '#0d0d0d';
       ctx.fillRect(0, footerY, w, footerH);
 
-      // Linha Divisória Superior
-      ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(0, footerY);
-      ctx.lineTo(w, footerY);
-      ctx.stroke();
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(0, footerY, w, footerH * 0.025);
 
       const padX = w * 0.04;
-
-      // Renderizar Logo Refinada (Se configurada)
-      if (companyLogoImg && companyLogoImg.complete && companyLogoImg.naturalWidth !== 0) {
-        const logoMaxH = footerH * 0.45;
-        const aspect = companyLogoImg.naturalWidth / companyLogoImg.naturalHeight;
-        let logoW = logoMaxH * aspect;
-        const maxLogoW = w * 0.30;
-        
-        if (logoW > maxLogoW) {
-          logoW = maxLogoW;
-        }
-
-        const logoX = w - padX - logoW;
-        const logoY = footerY + (footerH * 0.12);
-        
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.1)';
-        ctx.shadowBlur = 4;
-        ctx.drawImage(companyLogoImg, logoX, logoY, logoW, logoMaxH);
-        ctx.restore();
-      }
+      const contentWidth = w - (padX * 2);
 
       const now = new Date();
-      const hora = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-      const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-      const dataStr = `${dias[now.getDay()]}, ${now.getDate()} ${meses[now.getMonth()]}. ${now.getFullYear()}`;
+      const horaStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const dataStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
-      // Hora em destaque
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold ' + Math.round(footerH * 0.32) + 'px -apple-system, sans-serif';
-      ctx.fillText(hora, padX, footerY + (footerH * 0.36));
+      // 1. Hora em Destaque (Topo Esquerdo)
+      ctx.fillStyle = '#eab308';
+      ctx.font = `900 ${footerH * 0.24}px -apple-system, sans-serif`;
+      ctx.fillText(horaStr, padX, footerY + (footerH * 0.25));
 
-      // Data abaixo da hora
-      ctx.fillStyle = '#475569';
-      ctx.font = '600 ' + Math.round(footerH * 0.13) + 'px -apple-system, sans-serif';
-      ctx.fillText(dataStr, padX, footerY + (footerH * 0.52));
+      // 2. Data em Linha Exclusiva Abaixo da Hora
+      ctx.fillStyle = '#a3a3a3';
+      ctx.font = `700 ${footerH * 0.11}px -apple-system, sans-serif`;
+      ctx.fillText(`DATA: ${dataStr}`, padX, footerY + (footerH * 0.38));
 
-      // Coluna Central (Serviço e Posto)
-      const col2 = padX + (w * 0.28);
-      ctx.fillStyle = '#0284c7';
-      ctx.font = '800 ' + Math.round(footerH * 0.15) + 'px -apple-system, sans-serif';
-      ctx.fillText(currentVigia.servico.toUpperCase(), col2, footerY + (footerH * 0.28));
+      // 3. Marca Guardião no Topo Direito
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `900 ${footerH * 0.16}px -apple-system, sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText('GUARDIÃO', w - padX, footerY + (footerH * 0.25));
+      ctx.textAlign = 'left';
 
-      ctx.fillStyle = '#334155';
-      ctx.font = '700 ' + Math.round(footerH * 0.13) + 'px -apple-system, sans-serif';
-      ctx.fillText(`POSTO: ${currentVigia.posto.toUpperCase()}`, col2, footerY + (footerH * 0.46));
+      // Linha Divisória Separando Data/Hora dos Dados
+      ctx.fillStyle = '#262626';
+      ctx.fillRect(padX, footerY + (footerH * 0.44), contentWidth, 2);
 
-      // Linha separadora do rodapé inferior
-      const lineY = footerY + (footerH * 0.58);
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(padX, lineY);
-      ctx.lineTo(w - padX, lineY);
-      ctx.stroke();
+      // 4. Serviço e Posto
+      const servicoPosto = `${currentVigia.servico} - ${currentVigia.posto}`;
+      drawFitText(ctx, servicoPosto, padX, footerY + (footerH * 0.58), contentWidth, footerH * 0.11, '#eab308', '800');
 
-      // Detalhes (Nome, Local e Selo de Validação)
-      const y1 = lineY + (footerH * 0.14);
-      const y2 = y1 + (footerH * 0.12);
+      // 5. Agente / Colaborador
+      const agenteText = `COLABORADOR: ${currentVigia.nome}`;
+      drawFitText(ctx, agenteText, padX, footerY + (footerH * 0.73), contentWidth, footerH * 0.10, '#ffffff', '700');
 
-      const localFinal = currentVigia.endereco || gpsAddress;
-
-      ctx.fillStyle = '#0f172a';
-      ctx.font = '700 ' + Math.round(footerH * 0.11) + 'px -apple-system, sans-serif';
-      ctx.fillText(`👤 FUNCIONÁRIO: ${currentVigia.nome.toUpperCase()}`, padX, y1);
-
-      ctx.fillStyle = '#334155';
-      ctx.font = '600 ' + Math.round(footerH * 0.10) + 'px -apple-system, sans-serif';
-      ctx.fillText(`📍 LOCAL: ${localFinal.toUpperCase()}`, padX, y2);
-
-      // Selo de validação
-      ctx.fillStyle = '#16a34a';
-      ctx.font = '800 ' + Math.round(footerH * 0.09) + 'px -apple-system, sans-serif';
-      ctx.fillText(`✓ PONTO VERIFICADO VIA GPS`, w - (w * 0.35), y2);
+      // 6. Local / GPS
+      const localText = `LOCAL: ${currentVigia.endereco || gpsAddress}`;
+      drawFitText(ctx, localText, padX, footerY + (footerH * 0.88), contentWidth, footerH * 0.09, '#d4d4d4', '600');
 
       video.style.display = 'none';
       canvas.style.display = 'block';
@@ -514,18 +436,10 @@
     });
 
     btnConfirmSave.addEventListener('click', () => {
-      const now = new Date();
-      const timeStamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-      const fileName = `PONTO_${currentVigia.nome.replace(/\s+/g, '_')}_${timeStamp}.jpg`;
-
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/jpeg', 0.95);
-      a.download = fileName;
-      document.body.appendChild(a);
+      a.download = `GUARDIAO_PONTO_${Date.now()}.jpg`;
       a.click();
-      document.body.removeChild(a);
-
-      alert('✅ Registro confirmado e foto salva no celular!');
 
       video.style.display = 'block';
       canvas.style.display = 'none';
@@ -545,42 +459,17 @@
     document.getElementById('btnCloseAdmin').addEventListener('click', () => adminModal.style.display = 'none');
 
     document.getElementById('btnLoginAdmin').addEventListener('click', () => {
-      if (document.getElementById('adminPass').value === 'admin123') {
+      if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
         document.getElementById('adminAuth').style.display = 'none';
         document.getElementById('adminBody').style.display = 'block';
       } else {
-        alert('Senha incorreta! (Padrão: admin123)');
+        alert('Senha incorreta!');
       }
-    });
-
-    // Upload por arquivo
-    document.getElementById('cfgLogoFile').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          logoData = event.target.result;
-          document.getElementById('cfgLogoUrl').value = '';
-          loadLogo();
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Salvando Logo
-    document.getElementById('btnSaveLogo').addEventListener('click', () => {
-      const url = document.getElementById('cfgLogoUrl').value.trim();
-      if (url) {
-        logoData = url;
-      }
-      localStorage.setItem('companyLogoData', logoData);
-      loadLogo();
-      alert('✅ Logo atualizada com sucesso!');
     });
 
     document.getElementById('btnAddVigia').addEventListener('click', () => {
       const nome = document.getElementById('addNome').value;
-      if (!nome) return alert('Digite o nome do vigia.');
+      if (!nome) return alert('Digite o nome do agente.');
 
       dbVigias.push({
         id: Date.now(),
@@ -592,7 +481,7 @@
 
       saveDB();
       renderVigiasDatalist();
-      alert('Vigia cadastrado com sucesso!');
+      alert('Agente cadastrado com sucesso!');
       document.getElementById('addNome').value = '';
     });
 
