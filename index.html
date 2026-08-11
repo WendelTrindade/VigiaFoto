@@ -1,619 +1,938 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO - Registro de Ponto</title>
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0d0d0d">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Relatório Guardião</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #0d0d0d;
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    <style>
+        :root {
+            --primary: #121212;
+            --primary-card: #1e1e1e;
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --gold-dark: #aa8c2c;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --bg: #18181b;
+            --card: #27272a;
+            --border: #3f3f46;
+            --text: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --radius-app: 20px;
+            --radius-card: 14px;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
 
-    .app-bar {
-      background: #171717;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #eab308;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-title h1 {
-      font-size: 1.2rem;
-      color: #ffffff;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-    .brand-title span {
-      font-size: 0.65rem;
-      color: #eab308;
-      display: block;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-    .btn-admin {
-      background: #262626;
-      color: #eab308;
-      border: 1px solid #eab308;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    .container {
-      padding: 15px;
-      max-width: 500px;
-      margin: 0 auto;
-      width: 100%;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+        body { 
+            background-color: #09090b; 
+            color: var(--text); 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-    .vigia-card {
-      background: #171717;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #262626;
-    }
-    .vigia-card label {
-      font-size: 0.75rem;
-      color: #eab308;
-      text-transform: uppercase;
-      font-weight: 800;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .search-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #404040;
-      background: #0d0d0d;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-    }
+        .app-shell {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            max-height: 920px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
 
-    .badge-info {
-      margin-top: 10px;
-      padding: 10px;
-      background: #0d0d0d;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      color: #d4d4d4;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      border-left: 3px solid #dc2626;
-    }
-    .badge-info strong { color: #ffffff; }
+        @media (max-width: 480px) {
+            .app-shell {
+                max-height: 100vh;
+                border-radius: 0;
+            }
+        }
 
-    .preview-card {
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 2px solid #262626;
-      aspect-ratio: 3/4;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video, canvas, img { width: 100%; height: 100%; object-fit: cover; }
+        @media (min-width: 481px) {
+            .app-shell {
+                border-radius: 32px;
+                border: 4px solid var(--gold-dark);
+                height: 94vh;
+            }
+        }
 
-    .rec-status {
-      position: absolute; top: 15px; left: 15px;
-      background: rgba(220, 38, 38, 0.9); color: white;
-      padding: 6px 12px; border-radius: 20px; font-weight: 800;
-      font-size: 0.8rem; display: none; align-items: center; gap: 6px;
-      z-index: 5;
-    }
-    .rec-dot { width: 10px; height: 10px; background: white; border-radius: 50%; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+        /* Top Bar */
+        .app-header {
+            background: var(--primary);
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-    .actions { display: flex; flex-direction: column; gap: 10px; }
-    .btn-group-main { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    
-    .btn {
-      width: 100%;
-      padding: 15px 10px;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-photo { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #000; }
-    .btn-video { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; }
-    .btn-stop { background: #eab308; color: #000; grid-column: span 2; }
-    .btn-confirm { background: #16a34a; color: #fff; }
-    .btn-cancel { background: #dc2626; color: #fff; }
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 100;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .modal-content {
-      max-width: 450px;
-      margin: 0 auto;
-      background: #171717;
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid #eab308;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    .modal-header h2 { font-size: 1.2rem; color: #eab308; }
-    .close-btn { background: none; border: none; color: #a3a3a3; font-size: 1.5rem; cursor: pointer; }
-    
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.75rem; color: #a3a3a3; margin-bottom: 4px; }
-    .form-group input {
-      width: 100%; padding: 10px; border-radius: 6px;
-      border: 1px solid #404040; background: #0d0d0d; color: #fff;
-    }
-    .list-item {
-      padding: 10px;
-      background: #0d0d0d;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      border: 1px solid #262626;
-    }
-    .btn-del { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-  </style>
+        .app-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: #000;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .app-title h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+        }
+
+        .app-title p {
+            font-size: 0.68rem;
+            color: var(--gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Body Area */
+        .app-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 110px;
+        }
+
+        /* Stats Bar */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stat-pill {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .stat-pill span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            display: block;
+        }
+
+        .stat-pill strong {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .stat-pill.danger strong { color: var(--danger); }
+
+        /* Form Controls */
+        .input-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .input-group:last-child { margin-bottom: 0; }
+
+        .input-group label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            background: #18181b;
+            color: #fff;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .input-field:focus {
+            border-color: var(--gold);
+        }
+
+        /* Setor/Ronda Pills */
+        .ronda-selector-wrapper {
+            margin-bottom: 16px;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ronda-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .ronda-pills::-webkit-scrollbar { display: none; }
+
+        .ronda-pill-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ronda-pill-btn.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        .ronda-pill-btn.add {
+            border-style: dashed;
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* Sections and Photo Cards */
+        .section-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .section-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-card-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .count-badge-app {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .count-badge-danger {
+            background: rgba(220, 38, 38, 0.15);
+            color: var(--danger);
+            border-color: rgba(220, 38, 38, 0.3);
+        }
+
+        .photo-grid-app {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .photo-card-app {
+            background: #18181b;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .photo-card-img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .photo-badge-app {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .p-rotina { background: #52525b; }
+        .p-baixa { background: #0284c7; }
+        .p-media { background: var(--warning); }
+        .p-alta { background: var(--danger); }
+
+        .photo-del-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .photo-card-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .photo-card-body input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 0.72rem;
+            outline: none;
+            background: #27272a;
+            color: #fff;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px calc(12px + var(--safe-bottom));
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            z-index: 20;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s active;
+        }
+
+        .app-btn:active { transform: scale(0.97); }
+
+        .btn-gold { 
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); 
+            color: #000; 
+        }
+
+        .btn-danger-app { 
+            background: rgba(220, 38, 38, 0.15); 
+            color: var(--danger); 
+            border: 1px solid rgba(220, 38, 38, 0.4); 
+        }
+
+        .btn-icon-app { 
+            background: #27272a; 
+            color: var(--text-muted); 
+            width: 44px; 
+            padding: 0; 
+        }
+
+        /* Bottom Sheets */
+        .sheet-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 30;
+            display: none;
+            align-items: flex-end;
+        }
+
+        .sheet-overlay.active { display: flex; }
+
+        .bottom-sheet {
+            background: var(--primary);
+            width: 100%;
+            border-radius: 24px 24px 0 0;
+            border-top: 2px solid var(--gold);
+            padding: 20px;
+            animation: slideUp 0.25s ease-out;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .sheet-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .sheet-close {
+            background: #27272a;
+            color: #fff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #inputCamRotina, #inputCamOcorrencia { display: none; }
+    </style>
 </head>
 <body>
 
-  <div class="app-bar">
-    <div class="brand-title">
-      <div style="font-size: 1.4rem;">🛡️</div>
-      <div>
-        <h1>GUARDIÃO</h1>
-        <span>SERVIÇOS DE QUALIDADE</span>
-      </div>
-    </div>
-    <button class="btn-admin" id="btnOpenAdmin">⚙️ Admin</button>
-  </div>
-
-  <div class="container">
-    <div class="vigia-card">
-      <label for="searchVigia">NOME DO COLABORADOR:</label>
-      <input type="text" id="searchVigia" class="search-input" list="vigiasList" placeholder="Digite seu nome...">
-      <datalist id="vigiasList"></datalist>
-
-      <div class="badge-info">
-        <div>Posto: <strong id="lblPosto">POSTO CENTRAL</strong></div>
-        <div>Serviço: <strong id="lblServico">GUARDIÃO SEGURANÇA</strong></div>
-        <div>Local: <strong id="lblLocal">Obtendo localização...</strong></div>
-      </div>
+<div class="app-shell">
+    <div class="app-header">
+        <div class="app-title">
+            <div class="app-icon">
+                <i data-lucide="shield" style="width: 22px; height: 22px;"></i>
+            </div>
+            <div>
+                <h1>GUARDIÃO</h1>
+                <p>Serviços de Qualidade</p>
+            </div>
+        </div>
+        <button class="app-btn btn-gold" style="padding: 8px 12px; font-size: 0.75rem;" id="btnExportPdf" onclick="gerarPDF()" disabled>
+            <i data-lucide="file-down" style="width: 16px;"></i> PDF
+        </button>
     </div>
 
-    <div class="preview-card">
-      <div class="rec-status" id="recBadge"><div class="rec-dot"></div> GRAVANDO VÍDEO...</div>
-      <video id="videoSource" autoplay playsinline style="display:none;"></video>
-      <canvas id="canvasDisplay"></canvas>
-      <img id="photoResult" style="display: none;" />
-      <video id="videoResult" controls style="display: none;"></video>
-    </div>
-
-    <div class="actions">
-      <!-- Botões de Ação Principal -->
-      <div id="mainControls" class="btn-group-main">
-        <button id="btnTakePhoto" class="btn btn-photo">📸 TIRAR FOTO</button>
-        <button id="btnStartRecord" class="btn btn-video">🎥 GRAVAR VÍDEO</button>
-        <button id="btnStopRecord" class="btn btn-stop" style="display: none;">⏹️ PARAR GRAVAÇÃO</button>
-      </div>
-
-      <!-- Botões de Confirmação e Download -->
-      <div id="confirmControls" style="display: none; flex-direction: column; gap: 10px;">
-        <button id="btnConfirmSave" class="btn btn-confirm">✅ CONFIRMAR & SALVAR</button>
-        <button id="btnCancelRetake" class="btn btn-cancel">🔄 CANCELAR E REPETIR</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Painel Admin -->
-  <div class="modal" id="adminModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Painel Guardião Gestor</h2>
-        <button class="close-btn" id="btnCloseAdmin">&times;</button>
-      </div>
-
-      <div id="adminAuth">
-        <div class="form-group">
-          <label>Senha do Administrador:</label>
-          <input type="password" id="adminPass" placeholder="Digite a senha">
-        </div>
-        <button class="btn btn-photo" id="btnLoginAdmin">Acessar Painel</button>
-      </div>
-
-      <div id="adminBody" style="display: none;">
-        <h3 style="font-size: 0.9rem; color: #eab308; margin-bottom: 10px;">Cadastrar Novo Agente</h3>
-        <div class="form-group">
-          <label>Nome Completo:</label>
-          <input type="text" id="addNome" placeholder="Ex: Carlos Silva">
-        </div>
-        <div class="form-group">
-          <label>Serviço / Categoria:</label>
-          <input type="text" id="addServico" value="GUARDIÃO SEGURANÇA">
-        </div>
-        <div class="form-group">
-          <label>Posto / Setor:</label>
-          <input type="text" id="addPosto" value="POSTO CENTRAL">
-        </div>
-        <div class="form-group">
-          <label>Endereço Fixo (Opcional):</label>
-          <input type="text" id="addEndereco" placeholder="Deixe em branco para usar GPS">
-        </div>
-        <button class="btn btn-confirm" id="btnAddVigia" style="margin-bottom: 15px;">➕ Cadastrar Agente</button>
-
-        <h3 style="font-size: 0.9rem; color: #d4d4d4; margin-bottom: 10px;">Equipe Cadastrada</h3>
-        <div id="vigiasListaAdmin"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const ADMIN_PASSWORD = '28642155';
-
-    let dbVigias = JSON.parse(localStorage.getItem('dbVigias')) || [
-      { id: 1, nome: 'CARLOS SILVA BATISTA', servico: 'GUARDIÃO SEGURANÇA', posto: 'POSTO CENTRAL', endereco: '' }
-    ];
-    let currentVigia = dbVigias[0];
-    let gpsAddress = 'LOCALIZANDO GPS...';
-
-    const videoSource = document.getElementById('videoSource');
-    const canvas = document.getElementById('canvasDisplay');
-    const ctx = canvas.getContext('2d');
-    const photoResult = document.getElementById('photoResult');
-    const videoResult = document.getElementById('videoResult');
-
-    const btnTakePhoto = document.getElementById('btnTakePhoto');
-    const btnStartRecord = document.getElementById('btnStartRecord');
-    const btnStopRecord = document.getElementById('btnStopRecord');
-    const btnConfirmSave = document.getElementById('btnConfirmSave');
-    const btnCancelRetake = document.getElementById('btnCancelRetake');
-    
-    const mainControls = document.getElementById('mainControls');
-    const confirmControls = document.getElementById('confirmControls');
-    const recBadge = document.getElementById('recBadge');
-    const searchVigia = document.getElementById('searchVigia');
-    const vigiasList = document.getElementById('vigiasList');
-
-    let mediaRecorder;
-    let recordedChunks = [];
-    let recordedBlob = null;
-    let captureType = null; // 'photo' ou 'video'
-    let isLoopActive = true;
-
-    function initApp() {
-      saveDB();
-      renderVigiasDatalist();
-      selectVigia(dbVigias[0].nome);
-      initCamera();
-      initGPS();
-    }
-
-    function saveDB() {
-      localStorage.setItem('dbVigias', JSON.stringify(dbVigias));
-    }
-
-    function renderVigiasDatalist() {
-      vigiasList.innerHTML = '';
-      const listAdmin = document.getElementById('vigiasListaAdmin');
-      listAdmin.innerHTML = '';
-
-      dbVigias.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v.nome;
-        vigiasList.appendChild(opt);
-
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-          <div>
-            <strong style="color:#fff;">${v.nome}</strong><br>
-            <small style="color:#eab308;">${v.posto} - ${v.servico}</small>
-          </div>
-          <button class="btn-del" onclick="deleteVigia(${v.id})">Remover</button>
-        `;
-        listAdmin.appendChild(item);
-      });
-    }
-
-    function selectVigia(nome) {
-      const found = dbVigias.find(v => v.nome.toUpperCase() === nome.toUpperCase());
-      if (found) {
-        currentVigia = found;
-        document.getElementById('lblPosto').innerText = currentVigia.posto;
-        document.getElementById('lblServico').innerText = currentVigia.servico;
-        document.getElementById('lblLocal').innerText = currentVigia.endereco || gpsAddress;
-      }
-    }
-
-    searchVigia.addEventListener('input', (e) => selectVigia(e.target.value));
-
-    async function initCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: true
-        });
-        videoSource.srcObject = stream;
-        videoSource.play();
-        requestAnimationFrame(renderLoop);
-      } catch (e) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          videoSource.srcObject = stream;
-          videoSource.play();
-          requestAnimationFrame(renderLoop);
-        } catch(err) {
-          alert("Não foi possível acessar a câmera ou microfone.");
-        }
-      }
-    }
-
-    function initGPS() {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
-            const data = await res.json();
-            const road = data.address.road || 'RUA REGISTRADA';
-            const city = data.address.city || data.address.town || 'CIDADE';
-            gpsAddress = `${road.toUpperCase()}, ${city.toUpperCase()}`;
-            if (!currentVigia.endereco) {
-              document.getElementById('lblLocal').innerText = gpsAddress;
-            }
-          } catch (e) { gpsAddress = "GPS ATIVO (ENDEREÇO INDISPONÍVEL)"; }
-        });
-      }
-    }
-
-    function drawFitText(ctx, text, x, y, maxWidth, baseFontSize, fontColor, fontWeight = '700') {
-      let fontSize = baseFontSize;
-      ctx.font = `${fontWeight} ${fontSize}px -apple-system, sans-serif`;
-      while (ctx.measureText(text).width > maxWidth && fontSize > 12) {
-        fontSize -= 2;
-        ctx.font = `${fontWeight} ${fontSize}px -apple-system, sans-serif`;
-      }
-      ctx.fillStyle = fontColor;
-      ctx.fillText(text, x, y);
-    }
-
-    // Desenha o vídeo e a estampa em tempo real no Canvas
-    function renderLoop() {
-      if (!isLoopActive) return;
-
-      const w = videoSource.videoWidth || 1280;
-      const h = videoSource.videoHeight || 720;
-
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-
-      ctx.drawImage(videoSource, 0, 0, w, h);
-
-      const footerH = h * 0.28;
-      const footerY = h - footerH;
-
-      ctx.fillStyle = '#0d0d0d';
-      ctx.fillRect(0, footerY, w, footerH);
-
-      ctx.fillStyle = '#eab308';
-      ctx.fillRect(0, footerY, w, footerH * 0.025);
-
-      const padX = w * 0.04;
-      const contentWidth = w - (padX * 2);
-
-      const now = new Date();
-      const horaStr = String(now.getHours()).padStart(2, '0') + ':' + 
-                      String(now.getMinutes()).padStart(2, '0') + ':' + 
-                      String(now.getSeconds()).padStart(2, '0');
-      const dataStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
-
-      // Hora
-      ctx.fillStyle = '#eab308';
-      ctx.font = `900 ${footerH * 0.24}px -apple-system, sans-serif`;
-      ctx.fillText(horaStr, padX, footerY + (footerH * 0.25));
-
-      // Data abaixo da hora
-      ctx.fillStyle = '#a3a3a3';
-      ctx.font = `700 ${footerH * 0.11}px -apple-system, sans-serif`;
-      ctx.fillText(`DATA: ${dataStr}`, padX, footerY + (footerH * 0.38));
-
-      // Marca Guardião
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `900 ${footerH * 0.16}px -apple-system, sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.fillText('GUARDIÃO', w - padX, footerY + (footerH * 0.25));
-      ctx.textAlign = 'left';
-
-      // Linha Separadora
-      ctx.fillStyle = '#262626';
-      ctx.fillRect(padX, footerY + (footerH * 0.44), contentWidth, 2);
-
-      // Serviço e Posto
-      const servicoPosto = `${currentVigia.servico} - ${currentVigia.posto}`;
-      drawFitText(ctx, servicoPosto, padX, footerY + (footerH * 0.58), contentWidth, footerH * 0.11, '#eab308', '800');
-
-      // Agente
-      const agenteText = `COLABORADOR: ${currentVigia.nome}`;
-      drawFitText(ctx, agenteText, padX, footerY + (footerH * 0.73), contentWidth, footerH * 0.10, '#ffffff', '700');
-
-      // Local
-      const localText = `LOCAL: ${currentVigia.endereco || gpsAddress}`;
-      drawFitText(ctx, localText, padX, footerY + (footerH * 0.88), contentWidth, footerH * 0.09, '#d4d4d4', '600');
-
-      requestAnimationFrame(renderLoop);
-    }
-
-    // AÇÃO 1: TIRAR FOTO
-    btnTakePhoto.addEventListener('click', () => {
-      captureType = 'photo';
-      const imageData = canvas.toDataURL('image/jpeg', 0.95);
-      photoResult.src = imageData;
-
-      canvas.style.display = 'none';
-      photoResult.style.display = 'block';
-      
-      mainControls.style.display = 'none';
-      confirmControls.style.display = 'flex';
-      isLoopActive = false;
-    });
-
-    // AÇÃO 2: GRAVAR VÍDEO
-    btnStartRecord.addEventListener('click', () => {
-      captureType = 'video';
-      recordedChunks = [];
-
-      const canvasStream = canvas.captureStream(30);
-      const audioTrack = videoSource.srcObject.getAudioTracks()[0];
-      if (audioTrack) canvasStream.addTrack(audioTrack);
-
-      mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
-        videoResult.src = URL.createObjectURL(recordedBlob);
-
-        canvas.style.display = 'none';
-        videoResult.style.display = 'block';
+    <div class="app-body">
         
-        mainControls.style.display = 'none';
-        confirmControls.style.display = 'flex';
-        isLoopActive = false;
-      };
+        <div class="stats-grid">
+            <div class="stat-pill">
+                <span>Total</span>
+                <strong id="statTotal">0</strong>
+            </div>
+            <div class="stat-pill danger">
+                <span>Ocorrências</span>
+                <strong id="statOcorrencias">0</strong>
+            </div>
+            <div class="stat-pill">
+                <span>Rotina</span>
+                <strong id="statRotina" style="color: #fff;">0</strong>
+            </div>
+        </div>
 
-      mediaRecorder.start();
-      recBadge.style.display = 'flex';
-      btnTakePhoto.style.display = 'none';
-      btnStartRecord.style.display = 'none';
-      btnStopRecord.style.display = 'flex';
-    });
+        <div class="input-card">
+            <div class="input-group">
+                <label>Empresa / Cliente</label>
+                <input type="text" id="empresa" class="input-field" placeholder="Ex: Condomínio Solar">
+            </div>
+            <div class="input-group">
+                <label>Vigilante Responsável</label>
+                <input type="text" id="vigilante" class="input-field" placeholder="Ex: Agente Guardião">
+            </div>
+        </div>
 
-    btnStopRecord.addEventListener('click', () => {
-      mediaRecorder.stop();
-      recBadge.style.display = 'none';
-      btnStopRecord.style.display = 'none';
-      btnTakePhoto.style.display = 'flex';
-      btnStartRecord.style.display = 'flex';
-    });
+        <div class="ronda-selector-wrapper">
+            <div class="section-label">
+                <span>Setor / Ronda Ativa</span>
+                <span id="labelRondaAtiva" style="color: var(--gold);">Ronda 01</span>
+            </div>
+            <div class="ronda-pills" id="rondaPillsContainer"></div>
+        </div>
 
-    // CONFIRMAR E SALVAR
-    btnConfirmSave.addEventListener('click', () => {
-      const a = document.createElement('a');
-      if (captureType === 'photo') {
-        a.href = photoResult.src;
-        a.download = `GUARDIAO_PONTO_FOTO_${Date.now()}.jpg`;
-      } else {
-        a.href = URL.createObjectURL(recordedBlob);
-        a.download = `GUARDIAO_PONTO_VIDEO_${Date.now()}.webm`;
-      }
-      a.click();
-      resetPreview();
-    });
+        <div id="containerOcorrencias"></div>
+        <div id="containerRondas"></div>
 
-    // CANCELAR E REPETIR
-    btnCancelRetake.addEventListener('click', resetPreview);
+    </div>
 
-    function resetPreview() {
-      photoResult.style.display = 'none';
-      videoResult.style.display = 'none';
-      canvas.style.display = 'block';
-      
-      confirmControls.style.display = 'none';
-      mainControls.style.display = 'grid';
-      
-      isLoopActive = true;
-      requestAnimationFrame(renderLoop);
+    <div class="bottom-nav">
+        <button class="app-btn btn-gold" onclick="abrirCapturaRotina()">
+            <i data-lucide="camera" style="width: 18px;"></i>
+            <span>+ Rotina</span>
+        </button>
+        <button class="app-btn btn-danger-app" onclick="abrirModalOcorrencia()">
+            <i data-lucide="alert-triangle" style="width: 18px;"></i>
+            <span>+ Ocorrência</span>
+        </button>
+        <button class="app-btn btn-icon-app" onclick="limparTudo()" title="Limpar Tudo">
+            <i data-lucide="trash-2" style="width: 18px;"></i>
+        </button>
+    </div>
+
+    <div class="sheet-overlay" id="sheetRonda">
+        <div class="bottom-sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">Novo Setor / Ronda</div>
+                <button class="sheet-close" onclick="fecharSheet('sheetRonda')">×</button>
+            </div>
+            <div class="input-group" style="margin-bottom: 16px;">
+                <label>Nome do Setor</label>
+                <input type="text" id="inputNomeNovaRonda" class="input-field" placeholder="Ex: Ronda 02 - Perímetro Norte">
+            </div>
+            <button class="app-btn btn-gold" style="width: 100%;" onclick="confirmarNovaRonda()">Criar Setor</button>
+        </div>
+    </div>
+
+    <div class="sheet-overlay" id="sheetOcorrencia">
+        <div class="bottom-sheet" style="border-top-color: var(--danger);">
+            <div class="sheet-header">
+                <div class="sheet-title" style="color: var(--danger);">Registrar Ocorrência</div>
+                <button class="sheet-close" onclick="fecharSheet('sheetOcorrencia')">×</button>
+            </div>
+            <div class="input-group" style="margin-bottom: 10px;">
+                <label>Prioridade / Gravidade</label>
+                <select id="prioridadeOcorrencia" class="input-field">
+                    <option value="BAIXA">Baixa Prioridade</option>
+                    <option value="MÉDIA">Média Prioridade</option>
+                    <option value="ALTA" selected>ALTA PRIORIDADE</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom: 16px;">
+                <label>Descrição da Ocorrência</label>
+                <input type="text" id="obsOcorrencia" class="input-field" placeholder="Ex: Danificação no portão de acesso">
+            </div>
+            <button class="app-btn" style="width: 100%; background: var(--danger); color: white;" onclick="dispararCameraOcorrencia()">
+                <i data-lucide="camera" style="width: 18px;"></i> Anexar Foto
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<input type="file" id="inputCamRotina" accept="image/*" multiple onchange="processarFotosRotina(this.files)">
+<input type="file" id="inputCamOcorrencia" accept="image/*" multiple onchange="processarFotosOcorrencia(this.files)">
+
+<script>
+    lucide.createIcons();
+
+    const rondasCriadas = ["Ronda 01"];
+    let rondaAtiva = "Ronda 01";
+    const listaFotos = [];
+
+    window.onload = () => {
+        renderizarPillsRondas();
+        atualizarStats();
+    };
+
+    function renderizarPillsRondas() {
+        const container = document.getElementById('rondaPillsContainer');
+        container.innerHTML = '';
+
+        rondasCriadas.forEach(r => {
+            const count = listaFotos.filter(f => f.ronda === r).length;
+            const btn = document.createElement('button');
+            btn.className = `ronda-pill-btn ${r === rondaAtiva ? 'active' : ''}`;
+            btn.innerHTML = `<i data-lucide="shield" style="width: 12px;"></i> ${r} (${count})`;
+            btn.onclick = () => selecionarRonda(r);
+            container.appendChild(btn);
+        });
+
+        const btnAdd = document.createElement('button');
+        btnAdd.className = 'ronda-pill-btn add';
+        btnAdd.innerHTML = `<i data-lucide="plus" style="width: 12px;"></i> Criar Setor`;
+        btnAdd.onclick = () => abrirSheet('sheetRonda');
+        container.appendChild(btnAdd);
+
+        document.getElementById('labelRondaAtiva').innerText = rondaAtiva;
+        lucide.createIcons();
     }
 
-    // Modal Admin
-    const adminModal = document.getElementById('adminModal');
-    document.getElementById('btnOpenAdmin').addEventListener('click', () => adminModal.style.display = 'block');
-    document.getElementById('btnCloseAdmin').addEventListener('click', () => adminModal.style.display = 'none');
-
-    document.getElementById('btnLoginAdmin').addEventListener('click', () => {
-      if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
-        document.getElementById('adminAuth').style.display = 'none';
-        document.getElementById('adminBody').style.display = 'block';
-      } else {
-        alert('Senha incorreta!');
-      }
-    });
-
-    document.getElementById('btnAddVigia').addEventListener('click', () => {
-      const nome = document.getElementById('addNome').value;
-      if (!nome) return alert('Digite o nome do agente.');
-
-      dbVigias.push({
-        id: Date.now(),
-        nome: nome.toUpperCase(),
-        servico: document.getElementById('addServico').value.toUpperCase(),
-        posto: document.getElementById('addPosto').value.toUpperCase(),
-        endereco: document.getElementById('addEndereco').value.toUpperCase()
-      });
-
-      saveDB();
-      renderVigiasDatalist();
-      alert('Agente cadastrado com sucesso!');
-      document.getElementById('addNome').value = '';
-    });
-
-    function deleteVigia(id) {
-      dbVigias = dbVigias.filter(v => v.id !== id);
-      saveDB();
-      renderVigiasDatalist();
+    function selecionarRonda(nome) {
+        rondaAtiva = nome;
+        renderizarPillsRondas();
     }
 
-    window.addEventListener('load', initApp);
-  </script>
+    function abrirSheet(id) { document.getElementById(id).classList.add('active'); }
+    function fecharSheet(id) { document.getElementById(id).classList.remove('active'); }
+
+    function confirmarNovaRonda() {
+        const val = document.getElementById('inputNomeNovaRonda').value.trim();
+        if (val && !rondasCriadas.includes(val)) {
+            rondasCriadas.push(val);
+            rondaAtiva = val;
+            document.getElementById('inputNomeNovaRonda').value = '';
+            fecharSheet('sheetRonda');
+            renderizarPillsRondas();
+            renderizarGrid();
+        }
+    }
+
+    function abrirCapturaRotina() { document.getElementById('inputCamRotina').click(); }
+    function abrirModalOcorrencia() { abrirSheet('sheetOcorrencia'); }
+    function dispararCameraOcorrencia() { document.getElementById('inputCamOcorrencia').click(); }
+
+    async function processarFotosRotina(files) {
+        if (!files || files.length === 0) return;
+        await adicionarFotos(files, rondaAtiva, 'ROTINA', '');
+    }
+
+    async function processarFotosOcorrencia(files) {
+        if (!files || files.length === 0) return;
+        const prio = document.getElementById('prioridadeOcorrencia').value;
+        const obs = document.getElementById('obsOcorrencia').value;
+        await adicionarFotos(files, rondaAtiva, prio, obs);
+        document.getElementById('obsOcorrencia').value = '';
+        fecharSheet('sheetOcorrencia');
+    }
+
+    async function adicionarFotos(files, ronda, prioridade, obs) {
+        for (let i = 0; i < files.length; i++) {
+            const base64 = await otimizarFoto(files[i]);
+            listaFotos.push({
+                id: Date.now() + Math.random(),
+                ronda: ronda,
+                src: base64,
+                prioridade: prioridade,
+                obs: obs
+            });
+        }
+        document.getElementById('inputCamRotina').value = '';
+        document.getElementById('inputCamOcorrencia').value = '';
+        renderizarGrid();
+    }
+
+    function otimizarFoto(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const max = 1000;
+                    if (w > h && w > max) { h = Math.round((h * max) / w); w = max; }
+                    else if (h > max) { w = Math.round((w * max) / h); h = max; }
+
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+            };
+        });
+    }
+
+    function atualizarStats() {
+        const total = listaFotos.length;
+        const ocorrencias = listaFotos.filter(f => f.prioridade !== 'ROTINA').length;
+        const rotinas = listaFotos.filter(f => f.prioridade === 'ROTINA').length;
+
+        document.getElementById('statTotal').innerText = total;
+        document.getElementById('statOcorrencias').innerText = ocorrencias;
+        document.getElementById('statRotina').innerText = rotinas;
+        document.getElementById('btnExportPdf').disabled = total === 0;
+    }
+
+    function renderizarGrid() {
+        atualizarStats();
+        renderizarPillsRondas();
+
+        const containerOc = document.getElementById('containerOcorrencias');
+        const containerRo = document.getElementById('containerRondas');
+        containerOc.innerHTML = '';
+        containerRo.innerHTML = '';
+
+        const ocorrencias = listaFotos.filter(f => f.prioridade !== 'ROTINA');
+        const rotinas = listaFotos.filter(f => f.prioridade === 'ROTINA');
+
+        if (ocorrencias.length > 0) {
+            let htmlCards = '';
+            ocorrencias.forEach(f => {
+                let pClass = 'p-baixa';
+                if (f.prioridade === 'MÉDIA') pClass = 'p-media';
+                if (f.prioridade === 'ALTA') pClass = 'p-alta';
+                htmlCards += criarCardFotoApp(f, pClass);
+            });
+
+            containerOc.innerHTML = `
+                <div class="section-card" style="border-color: rgba(220, 38, 38, 0.4); background: rgba(220, 38, 38, 0.05);">
+                    <div class="section-card-header">
+                        <div class="section-card-title" style="color: var(--danger);">
+                            <i data-lucide="alert-circle" style="width: 16px;"></i> Ocorrências
+                        </div>
+                        <span class="count-badge-app count-badge-danger">${ocorrencias.length} fotos</span>
+                    </div>
+                    <div class="photo-grid-app">${htmlCards}</div>
+                </div>
+            `;
+        }
+
+        if (rotinas.length > 0) {
+            const agrupado = {};
+            rotinas.forEach(item => {
+                if (!agrupado[item.ronda]) agrupado[item.ronda] = [];
+                agrupado[item.ronda].push(item);
+            });
+
+            for (const [rondaNome, fotos] of Object.entries(agrupado)) {
+                let htmlCards = '';
+                fotos.forEach(f => {
+                    htmlCards += criarCardFotoApp(f, 'p-rotina');
+                });
+
+                containerRo.innerHTML += `
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <div class="section-card-title">
+                                <i data-lucide="shield" style="width: 16px; color: var(--gold);"></i> ${rondaNome}
+                            </div>
+                            <span class="count-badge-app">${fotos.length} fotos</span>
+                        </div>
+                        <div class="photo-grid-app">${htmlCards}</div>
+                    </div>
+                `;
+            }
+        }
+
+        lucide.createIcons();
+    }
+
+    function criarCardFotoApp(foto, pClass) {
+        return `
+            <div class="photo-card-app">
+                <img src="${foto.src}" class="photo-card-img">
+                <span class="photo-badge-app ${pClass}">${foto.prioridade}</span>
+                <button class="photo-del-btn" onclick="removerFoto(${foto.id})">×</button>
+                <div class="photo-card-body">
+                    <input type="text" placeholder="Obs..." value="${foto.obs}" onchange="atualizarObs(${foto.id}, this.value)">
+                </div>
+            </div>
+        `;
+    }
+
+    function atualizarObs(id, val) {
+        const item = listaFotos.find(f => f.id === id);
+        if (item) item.obs = val;
+    }
+
+    function removerFoto(id) {
+        const idx = listaFotos.findIndex(f => f.id === id);
+        if (idx !== -1) listaFotos.splice(idx, 1);
+        renderizarGrid();
+    }
+
+    function limparTudo() {
+        if (confirm("Deseja apagar todas as fotos do relatório?")) {
+            listaFotos.length = 0;
+            renderizarGrid();
+        }
+    }
+
+    function gerarPDF() {
+        if (listaFotos.length === 0) return;
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const empresa = document.getElementById('empresa').value || 'Não informado';
+        const vigilante = document.getElementById('vigilante').value || 'Não informado';
+        const dataHora = new Date().toLocaleString('pt-BR');
+
+        const ocorrencias = listaFotos.filter(f => f.prioridade !== 'ROTINA');
+        const rotinas = listaFotos.filter(f => f.prioridade === 'ROTINA');
+
+        let primeiraPagina = true;
+
+        if (ocorrencias.length > 0) {
+            const titulo = `OCORRÊNCIAS EM DESTAQUE (${ocorrencias.length} FOTOS)`;
+            primeiraPagina = renderizarBlocoPDF(pdf, titulo, ocorrencias, empresa, vigilante, dataHora, primeiraPagina, true);
+        }
+
+        if (rotinas.length > 0) {
+            const agrupado = {};
+            rotinas.forEach(item => {
+                if (!agrupado[item.ronda]) agrupado[item.ronda] = [];
+                agrupado[item.ronda].push(item);
+            });
+
+            for (const [rondaNome, fotos] of Object.entries(agrupado)) {
+                const titulo = `${rondaNome.toUpperCase()} (${fotos.length} FOTOS)`;
+                primeiraPagina = renderizarBlocoPDF(pdf, titulo, fotos, empresa, vigilante, dataHora, primeiraPagina, false);
+            }
+        }
+
+        pdf.save(`Relatorio_Guardiao_${Date.now()}.pdf`);
+    }
+
+    function renderizarBlocoPDF(pdf, tituloSecao, fotos, empresa, vigilante, dataHora, primeiraPagina, isOcorrencia) {
+        const fotosPorPagina = 12;
+        
+        for (let i = 0; i < fotos.length; i += fotosPorPagina) {
+            if (!primeiraPagina) pdf.addPage();
+            primeiraPagina = false;
+
+            // Cabeçalho PDF com estilo Guardião (Preto e Dourado)
+            pdf.setFillColor(18, 18, 18);
+            pdf.rect(0, 0, 210, 14, 'F');
+            pdf.setTextColor(212, 175, 55);
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("GUARDIÃO - RELATÓRIO OPERACIONAL", 8, 9.5);
+
+            pdf.setTextColor(15, 23, 42);
+            pdf.setFontSize(7.5);
+            pdf.setFont("helvetica", "normal");
+            pdf.text(`Cliente: ${empresa}  |  Vigilante: ${vigilante}  |  Gerado em: ${dataHora}`, 8, 18.5);
+
+            if (isOcorrencia) pdf.setFillColor(220, 38, 38);
+            else pdf.setFillColor(212, 175, 55);
+            
+            pdf.rect(8, 21, 194, 5, 'F');
+            
+            if (isOcorrencia) pdf.setTextColor(255, 255, 255);
+            else pdf.setTextColor(0, 0, 0);
+
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(8);
+            pdf.text(tituloSecao, 10, 24.5);
+
+            const lote = fotos.slice(i, i + fotosPorPagina);
+
+            const largFoto = 61;
+            const altFoto = 38;
+            const gapX = 5.5;
+            const gapY = 22;
+            const startX = 8;
+            const startY = 28;
+
+            lote.forEach((foto, index) => {
+                const col = index % 3;
+                const row = Math.floor(index / 3);
+                
+                const posX = startX + col * (largFoto + gapX);
+                const posY = startY + row * (altFoto + gapY);
+
+                pdf.addImage(foto.src, 'JPEG', posX, posY, largFoto, altFoto);
+
+                pdf.setDrawColor(203, 213, 225);
+                pdf.rect(posX, posY, largFoto, altFoto);
+
+                if (foto.prioridade === 'ALTA') pdf.setFillColor(220, 38, 38);
+                else if (foto.prioridade === 'MÉDIA') pdf.setFillColor(245, 158, 11);
+                else if (foto.prioridade === 'BAIXA') pdf.setFillColor(2, 132, 199);
+                else pdf.setFillColor(100, 116, 139);
+
+                pdf.rect(posX, posY, 26, 4, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(5);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(foto.prioridade, posX + 1, posY + 2.8);
+
+                const textoObs = foto.obs ? `Obs: ${foto.obs}` : 'Sem observações';
+                
+                pdf.setFillColor(248, 250, 252);
+                pdf.rect(posX, posY + altFoto, largFoto, 14, 'F');
+                pdf.setDrawColor(226, 232, 240);
+                pdf.rect(posX, posY + altFoto, largFoto, 14);
+
+                pdf.setTextColor(51, 65, 85);
+                pdf.setFontSize(5.5);
+                pdf.setFont("helvetica", "normal");
+                
+                const linhasTexto = pdf.splitTextToSize(textoObs, largFoto - 3);
+                pdf.text(linhasTexto.slice(0, 2), posX + 1.5, posY + altFoto + 4.5);
+            });
+        }
+        return primeiraPagina;
+    }
+</script>
+
 </body>
 </html>
