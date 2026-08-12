@@ -3,88 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO - Sistema de Plantão e Relatórios</title>
+  <title>GUARDIÃO - Gerador de Ronda</title>
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0d0d0d; color: #f8fafc; min-height: 100vh;
-      display: flex; flex-direction: column; padding: 12px; gap: 12px;
+      display: flex; flex-direction: column; padding: 12px;
     }
 
     .app-bar {
       background: #171717; padding: 12px 16px; display: flex;
       justify-content: space-between; align-items: center; border-bottom: 2px solid #eab308;
-      border-radius: 8px;
+      border-radius: 8px; margin-bottom: 12px;
     }
     .brand-title h1 { font-size: 1.1rem; color: #ffffff; font-weight: 900; }
     .brand-title span { font-size: 0.6rem; color: #eab308; font-weight: 700; display: block; }
 
     .container { max-width: 500px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 12px; }
 
-    .card { background: #171717; padding: 14px; border-radius: 10px; border: 1px solid #262626; }
+    .card { background: #171717; padding: 12px; border-radius: 10px; border: 1px solid #262626; }
     .card label { font-size: 0.75rem; color: #eab308; font-weight: 800; display: block; margin-bottom: 4px; }
     
-    .input-field, select, textarea {
+    .input-field, select {
       width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #404040;
       background: #0d0d0d; color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 8px;
-      font-family: inherit;
     }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .tab-btn {
-      padding: 10px; background: #262626; color: #aaa; border: none;
-      border-radius: 6px; font-weight: 800; cursor: pointer; text-align: center;
-    }
-    .tab-btn.active { background: #eab308; color: #000; }
-
     .btn-select {
-      width: 100%; padding: 14px; border: 2px dashed #eab308; border-radius: 10px;
-      background: #1a1805; color: #eab308; font-size: 0.9rem; font-weight: 800;
+      width: 100%; padding: 16px; border: 2px dashed #eab308; border-radius: 10px;
+      background: #1a1805; color: #eab308; font-size: 1rem; font-weight: 800;
       cursor: pointer; text-align: center; display: block; margin-top: 5px;
     }
 
     .btn-action {
       width: 100%; padding: 14px; border: none; border-radius: 8px;
       background: #16a34a; color: #fff; font-size: 1rem; font-weight: 900;
-      cursor: pointer; margin-top: 10px;
+      cursor: pointer; display: none; margin-top: 10px;
     }
 
-    .btn-report { background: #2563eb; color: #fff; margin-top: 5px; }
-    .btn-danger { background: #dc2626; color: #fff; margin-top: 5px; font-size: 0.8rem; padding: 8px; }
-
+    /* Galeria de pré-visualização */
     .preview-grid {
-      display: grid; grid-template-columns: repeat( auto-fill, minmax(80px, 1fr) );
-      gap: 8px; margin-top: 10px; max-height: 150px; overflow-y: auto;
+      display: grid; grid-template-columns: repeat( auto-fill, minmax(90px, 1fr) );
+      gap: 8px; margin-top: 10px; max-height: 250px; overflow-y: auto;
     }
     .preview-item {
       position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden;
       border: 1px solid #404040; background: #000;
     }
     .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* Modal do Relatório Final */
-    .report-modal {
-      display: none; position: fixed; inset: 0; background: #000;
-      z-index: 100; padding: 15px; overflow-y: auto; color: #000;
+    .preview-tag {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.8); color: #eab308; font-size: 0.65rem;
+      font-weight: 800; text-align: center; padding: 2px 0;
     }
-    .report-paper {
-      background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto;
-    }
-    .report-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-    .report-section { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-    .report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
-    .report-img-card { border: 1px solid #ccc; padding: 4px; border-radius: 4px; }
-    .report-img-card img { width: 100%; border-radius: 2px; }
-    .badge-prio {
-      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; color: #fff;
-    }
-    .prio-ALTA { background: #dc2626; }
-    .prio-MÉDIA { background: #d97706; }
-    .prio-BAIXA { background: #16a34a; }
 
     canvas { display: none; }
   </style>
@@ -94,374 +69,156 @@
   <div class="app-bar">
     <div class="brand-title">
       <h1>🛡️ GUARDIÃO</h1>
-      <span>SISTEMA DE PLANTÃO COMPLETO</span>
+      <span>PROCESSADOR DE FOTOS DA RONDA</span>
     </div>
   </div>
 
   <div class="container">
-    <!-- Configuração do Agente e Posto -->
     <div class="card">
-      <label>AGENTE EM PLANTÃO:</label>
+      <label>AGENTE DA RONDA:</label>
       <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA" placeholder="Nome do Agente">
 
-      <label>POSTO DE TRABALHO / SETOR:</label>
-      <input type="text" id="txtPosto" class="input-field" value="POSTO CENTRAL" placeholder="Ex: SETOR A">
-    </div>
-
-    <!-- Abas: Ronda e Ocorrência -->
-    <div class="tabs">
-      <button class="tab-btn active" id="tabRonda" onclick="switchTab('RONDA')">🔄 RONDA</button>
-      <button class="tab-btn" id="tabOcorrencia" onclick="switchTab('OCORRENCIA')">⚠️ OCORRÊNCIA</button>
-    </div>
-
-    <!-- PAINEL DE RONDA -->
-    <div class="card" id="panelRonda">
       <div class="grid-2">
         <div>
           <label>Nº DA RONDA:</label>
           <input type="number" id="numRonda" class="input-field" value="1" min="1">
         </div>
         <div>
-          <label>HORA DA ESTAMPA:</label>
-          <select id="selectDataRonda" class="input-field">
+          <label>DATA/HORA:</label>
+
+          <select id="selectDataModo" class="input-field">
             <option value="AGORA">Hora Atual (Automática)</option>
             <option value="ARQUIVO">Hora Original da Foto</option>
           </select>
         </div>
       </div>
-
-      <label for="fileRonda" class="btn-select">📂 SELECIONAR FOTOS DA RONDA</label>
-      <input type="file" id="fileRonda" accept="image/*" multiple style="display: none;">
-
-      <div class="preview-grid" id="previewRonda"></div>
-      <button id="btnSaveRonda" class="btn-action" style="display:none;">💾 PROCESSAR E SALVAR RONDA</button>
     </div>
 
-    <!-- PAINEL DE OCORRÊNCIAS -->
-    <div class="card" id="panelOcorrencia" style="display:none;">
-      <div class="grid-2">
-        <div>
-          <label>PRIORIDADE:</label>
-          <select id="selectPrio" class="input-field">
-            <option value="BAIXA">🟢 BAIXA</option>
-            <option value="MÉDIA">🟠 MÉDIA</option>
-            <option value="ALTA">🔴 ALTA</option>
-          </select>
-        </div>
-        <div>
-          <label>LOCAL ESPECÍFICO:</label>
-          <input type="text" id="txtLocalOcorrencia" class="input-field" placeholder="Ex: PORTÃO B">
-        </div>
-      </div>
-
-      <label>DESCRIÇÃO DA OCORRÊNCIA:</label>
-      <textarea id="txtDescOcorrencia" class="input-field" rows="2" placeholder="Descreva o ocorrido..."></textarea>
-
-      <label for="fileOcorrencia" class="btn-select">📂 SELECIONAR FOTOS DA OCORRÊNCIA</label>
-      <input type="file" id="fileOcorrencia" accept="image/*" multiple style="display: none;">
-
-      <div class="preview-grid" id="previewOcorrencia"></div>
-      <button id="btnSaveOcorrencia" class="btn-action" style="display:none;">💾 SALVAR OCORRÊNCIA</button>
-    </div>
-
-    <!-- PAINEL DE CONTROLE LOCAL DO DISPOSITIVO -->
     <div class="card">
-      <label>REGISTROS NO DISPOSITIVO:</label>
-      <div id="statusStorage" style="font-size: 0.85rem; color: #aaa; margin: 5px 0;">Carregando dados...</div>
+      <label>SELECIONAR FOTOS DA GALERIA OU CÂMERA:</label>
+      <!-- Permite carregar várias fotos com qualidade original -->
+      <label for="fileGallery" class="btn-select">📂 SELECCIONAR FOTOS ( GALERIA )</label>
+      <input type="file" id="fileGallery" accept="image/*" multiple style="display: none;">
 
-      <button onclick="generateReport()" class="btn-action btn-report">📋 GERAR RELATÓRIO DO PLANTÃO</button>
-      <button onclick="clearAllData()" class="btn-action btn-danger">🗑️ LIMPAR PLANTÃO ATUAL</button>
-    </div>
-  </div>
+      <div class="preview-grid" id="previewGrid"></div>
 
-  <!-- MODAL DO RELATÓRIO IMPRESSO -->
-  <div class="report-modal" id="reportModal">
-    <div class="report-paper">
-      <div class="report-header">
-        <h2>🛡️ RELATÓRIO DE PLANTÃO - GUARDIÃO</h2>
-        <p><strong>Agente:</strong> <span id="repAgente"></span> | <strong>Posto:</strong> <span id="repPosto"></span></p>
-        <p><strong>Emissão:</strong> <span id="repData"></span></p>
-      </div>
-
-      <div id="repContent"></div>
-
-      <button onclick="window.print()" class="btn-action" style="background:#000; margin-top:15px;">🖨️ IMPRIMIR / SALVAR PDF</button>
-      <button onclick="closeReport()" class="btn-action btn-danger">FECHAR</button>
+      <button id="btnProcess" class="btn-action">⚡ PROCESSAR E BAIXAR FOTOS</button>
     </div>
   </div>
 
   <canvas id="workCanvas"></canvas>
 
   <script>
-    // Inicialização do Banco IndexedDB (Salva tudo localmente no celular)
-    let db;
-    const request = indexedDB.open("GuardiaoDB", 1);
-    request.onupgradeneeded = (e) => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("registros")) {
-        db.createObjectStore("registros", { keyPath: "id", autoIncrement: true });
-      }
-    };
-    request.onsuccess = (e) => {
-      db = e.target.result;
-      updateStorageStatus();
-    };
+    const fileGallery = document.getElementById('fileGallery');
+    const previewGrid = document.getElementById('previewGrid');
+    const btnProcess = document.getElementById('btnProcess');
+    const canvas = document.getElementById('workCanvas');
+    const ctx = canvas.getContext('2d');
 
-    function switchTab(tab) {
-      document.getElementById('tabRonda').classList.toggle('active', tab === 'RONDA');
-      document.getElementById('tabOcorrencia').classList.toggle('active', tab === 'OCORRENCIA');
-      document.getElementById('panelRonda').style.display = tab === 'RONDA' ? 'block' : 'none';
-      document.getElementById('panelOcorrencia').style.display = tab === 'OCORRENCIA' ? 'block' : 'none';
-    }
+    let selectedFiles = [];
 
-    // Leitura e Pré-visualização de Fotos
-    let rondaFiles = [];
-    document.getElementById('fileRonda').addEventListener('change', (e) => {
-      rondaFiles = Array.from(e.target.files);
-      renderPreview(rondaFiles, 'previewRonda');
-      document.getElementById('btnSaveRonda').style.display = rondaFiles.length ? 'block' : 'none';
-    });
+    fileGallery.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
 
-    let ocorrenciaFiles = [];
-    document.getElementById('fileOcorrencia').addEventListener('change', (e) => {
-      ocorrenciaFiles = Array.from(e.target.files);
-      renderPreview(ocorrenciaFiles, 'previewOcorrencia');
-      document.getElementById('btnSaveOcorrencia').style.display = ocorrenciaFiles.length ? 'block' : 'none';
-    });
+      selectedFiles = files;
+      previewGrid.innerHTML = '';
 
-    function renderPreview(files, containerId) {
-      const grid = document.getElementById(containerId);
-      grid.innerHTML = '';
-      files.forEach(file => {
+      const numRonda = document.getElementById('numRonda').value;
+
+      files.forEach((file, idx) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = (event) => {
           const div = document.createElement('div');
           div.className = 'preview-item';
-          div.innerHTML = `<img src="${e.target.result}">`;
-          grid.appendChild(div);
+          div.innerHTML = `
+            <img src="${event.target.result}">
+            <div class="preview-tag">Foto ${idx + 1} - Ronda ${numRonda}</div>
+          `;
+          previewGrid.appendChild(div);
         };
         reader.readAsDataURL(file);
       });
-    }
 
-    // Processar e Salvar Ronda
-    document.getElementById('btnSaveRonda').addEventListener('click', async () => {
-      const agente = document.getElementById('txtAgente').value.toUpperCase();
-      const posto = document.getElementById('txtPosto').value.toUpperCase();
-      const numRonda = document.getElementById('numRonda').value;
-      const modoData = document.getElementById('selectDataRonda').value;
-
-      const processedImages = [];
-      for (let i = 0; i < rondaFiles.length; i++) {
-        const file = rondaFiles[i];
-        const dateStr = modoData === 'AGORA' ? getNowStr() : getFileDateStr(file);
-        
-        // Aplica o carimbo completo na imagem
-        const imgData = await stampImage(file, `RONDA ${numRonda} - FOTO ${i+1}`, agente, posto, dateStr);
-        processedImages.push(imgData);
-      }
-
-      const record = {
-        tipo: 'RONDA',
-        titulo: `Ronda nº ${numRonda}`,
-        agente: agente,
-        posto: posto,
-        dataHora: getNowStr(),
-        imagens: processedImages
-      };
-
-      saveToDB(record, () => {
-        alert(`Ronda ${numRonda} processada e salva localmente!`);
-        rondaFiles = [];
-        document.getElementById('previewRonda').innerHTML = '';
-        document.getElementById('btnSaveRonda').style.display = 'none';
-        
-        // Incrementa automaticamente a numeração: Ronda 1 -> Ronda 2
-        document.getElementById('numRonda').value = parseInt(numRonda) + 1;
-        updateStorageStatus();
-      });
+      btnProcess.style.display = 'block';
     });
 
-    // Processar e Salvar Ocorrência
-    document.getElementById('btnSaveOcorrencia').addEventListener('click', async () => {
-      const agente = document.getElementById('txtAgente').value.toUpperCase();
-      const posto = document.getElementById('txtPosto').value.toUpperCase();
-      const prioridade = document.getElementById('selectPrio').value;
-      const local = document.getElementById('txtLocalOcorrencia').value.toUpperCase() || 'GERAL';
-      const descricao = document.getElementById('txtDescOcorrencia').value || 'Sem detalhes.';
+    btnProcess.addEventListener('click', async () => {
+      const agente = document.getElementById('txtAgente').value.toUpperCase() || 'AGENTE';
+      const numRonda = document.getElementById('numRonda').value || '1';
+      const modoData = document.getElementById('selectDataModo').value;
 
-      const processedImages = [];
-      for (let i = 0; i < ocorrenciaFiles.length; i++) {
-        const file = ocorrenciaFiles[i];
-        const imgData = await stampImage(file, `OCORRÊNCIA [${prioridade}] - FOTO ${i+1}`, agente, `${posto} (${local})`, getNowStr());
-        processedImages.push(imgData);
+      btnProcess.disabled = true;
+      btnProcess.innerText = "PROCESSANDO...";
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const numFoto = i + 1;
+        
+        let timeStr = "";
+        if (modoData === "AGORA") {
+          const now = new Date();
+          timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        } else {
+          const fileDate = new Date(file.lastModified);
+          timeStr = `${String(fileDate.getDate()).padStart(2,'0')}/${String(fileDate.getMonth()+1).padStart(2,'0')}/${fileDate.getFullYear()} ${String(fileDate.getHours()).padStart(2,'0')}:${String(fileDate.getMinutes()).padStart(2,'0')}`;
+        }
+
+        await processAndDownload(file, agente, numRonda, numFoto, timeStr);
       }
 
-      const record = {
-        tipo: 'OCORRENCIA',
-        prioridade: prioridade,
-        local: local,
-        descricao: descricao,
-        agente: agente,
-        posto: posto,
-        dataHora: getNowStr(),
-        imagens: processedImages
-      };
-
-      saveToDB(record, () => {
-        alert("Ocorrência registrada e salva com sucesso!");
-        ocorrenciaFiles = [];
-        document.getElementById('previewOcorrencia').innerHTML = '';
-        document.getElementById('btnSaveOcorrencia').style.display = 'none';
-        document.getElementById('txtDescOcorrencia').value = '';
-        updateStorageStatus();
-      });
+      btnProcess.disabled = false;
+      btnProcess.innerText = "⚡ PROCESSAR E BAIXAR FOTOS";
+      alert("Todas as fotos foram processadas e salvas com sucesso!");
     });
 
-    // CARIMBO DE DADOS DA FOTO (Ronda, Agente, Posto, Data e Hora)
-    function stampImage(file, titulo, agente, localStr, dataStr) {
+    function processAndDownload(file, agente, ronda, fotoNum, dataHoraStr) {
       return new Promise((resolve) => {
-        const canvas = document.getElementById('workCanvas');
-        const ctx = canvas.getContext('2d');
         const img = new Image();
         img.onload = () => {
+          // Mantém a qualidade original da resolução da foto
           canvas.width = img.width;
           canvas.height = img.height;
+
+          // Desenha a foto na resolução nativa
           ctx.drawImage(img, 0, 0);
 
+          // Configura o carimbo proporcional à foto
           const w = img.width;
           const h = img.height;
-          const footerH = h * 0.22;
+          const footerH = h * 0.18;
           const footerY = h - footerH;
 
-          // Fundo do Carimbo
-          ctx.fillStyle = 'rgba(13, 13, 13, 0.88)';
+          // Tarja preta de fundo
+          ctx.fillStyle = 'rgba(13, 13, 13, 0.85)';
           ctx.fillRect(0, footerY, w, footerH);
 
-          // Tarja Amarela Superior
+          // Linha amarela de destaque
           ctx.fillStyle = '#eab308';
-          ctx.fillRect(0, footerY, w, footerH * 0.03);
+          ctx.fillRect(0, footerY, w, footerH * 0.04);
 
           const padX = w * 0.04;
 
-          // 1. Título do Registro
+          // Linha 1: Numeração sequencial (FOTO X DA RONDA Y)
           ctx.fillStyle = '#eab308';
-          ctx.font = `900 ${footerH * 0.26}px sans-serif`;
-          ctx.fillText(titulo, padX, footerY + (footerH * 0.30));
+          ctx.font = `900 ${footerH * 0.32}px sans-serif`;
+          ctx.fillText(`FOTO ${fotoNum} - RONDA ${ronda}`, padX, footerY + (footerH * 0.40));
 
-          // 2. Agente
+          // Linha 2: Agente e Data
           ctx.fillStyle = '#ffffff';
-          ctx.font = `800 ${footerH * 0.18}px sans-serif`;
-          ctx.fillText(`AGENTE: ${agente}`, padX, footerY + (footerH * 0.52));
+          ctx.font = `700 ${footerH * 0.22}px sans-serif`;
+          ctx.fillText(`AGENTE: ${agente}  |  ${dataHoraStr}`, padX, footerY + (footerH * 0.75));
 
-          // 3. Local e Posto
-          ctx.fillStyle = '#d4d4d4';
-          ctx.font = `700 ${footerH * 0.16}px sans-serif`;
-          ctx.fillText(`LOCAL: ${localStr}`, padX, footerY + (footerH * 0.72));
+          // Baixa a imagem pronta
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/jpeg', 0.95);
+          a.download = `RONDA_${ronda}_FOTO_${fotoNum}.jpg`;
+          a.click();
 
-          // 4. Data e Hora
-          ctx.fillStyle = '#a3a3a3';
-          ctx.font = `600 ${footerH * 0.15}px sans-serif`;
-          ctx.fillText(`DATA/HORA: ${dataStr}`, padX, footerY + (footerH * 0.88));
-
-          resolve(canvas.toDataURL('image/jpeg', 0.90));
+          resolve();
         };
         img.src = URL.createObjectURL(file);
       });
-    }
-
-    function saveToDB(record, callback) {
-      const tx = db.transaction("registros", "readwrite");
-      const store = tx.objectStore("registros");
-      store.add(record);
-      tx.oncomplete = callback;
-    }
-
-    function updateStorageStatus() {
-      const tx = db.transaction("registros", "readonly");
-      const store = tx.objectStore("registros");
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const list = req.result;
-        const rondas = list.filter(r => r.tipo === 'RONDA').length;
-        const ocorrencias = list.filter(r => r.tipo === 'OCORRENCIA').length;
-        document.getElementById('statusStorage').innerHTML = `📌 <strong>${rondas}</strong> Rondas salvas | ⚠️ <strong>${ocorrencias}</strong> Ocorrências salvas`;
-      };
-    }
-
-    function clearAllData() {
-      if (confirm("Deseja apagar todos os registros acumulados neste celular?")) {
-        const tx = db.transaction("registros", "readwrite");
-        tx.objectStore("registros").clear();
-        tx.oncomplete = () => {
-          alert("Plantão atual limpo!");
-          document.getElementById('numRonda').value = "1";
-          updateStorageStatus();
-        };
-      }
-    }
-
-    // Geração do Relatório Unificado de Plantão
-    function generateReport() {
-      const tx = db.transaction("registros", "readonly");
-      const store = tx.objectStore("registros");
-      const req = store.getAll();
-
-      req.onsuccess = () => {
-        const records = req.result;
-        if (records.length === 0) {
-          alert("Nenhum registro armazenado no momento.");
-          return;
-        }
-
-        document.getElementById('repAgente').innerText = document.getElementById('txtAgente').value;
-        document.getElementById('repPosto').innerText = document.getElementById('txtPosto').value;
-        document.getElementById('repData').innerText = getNowStr();
-
-        let html = '';
-        records.forEach((rec) => {
-          if (rec.tipo === 'RONDA') {
-            html += `
-              <div class="report-section">
-                <h3>🔄 ${rec.titulo}</h3>
-                <p><small>Horário do Registro: ${rec.dataHora}</small></p>
-                <div class="report-grid">
-                  ${rec.imagens.map(img => `<div class="report-img-card"><img src="${img}"></div>`).join('')}
-                </div>
-              </div>
-            `;
-          } else {
-            html += `
-              <div class="report-section">
-                <h3>⚠️ OCORRÊNCIA - <span class="badge-prio prio-${rec.prioridade}">${rec.prioridade}</span></h3>
-                <p><strong>Local:</strong> ${rec.local}</p>
-                <p><strong>Descrição:</strong> ${rec.descricao}</p>
-                <p><small>Horário do Registro: ${rec.dataHora}</small></p>
-                <div class="report-grid">
-                  ${rec.imagens.map(img => `<div class="report-img-card"><img src="${img}"></div>`).join('')}
-                </div>
-              </div>
-            `;
-          }
-        });
-
-        document.getElementById('repContent').innerHTML = html;
-        document.getElementById('reportModal').style.display = 'block';
-      };
-    }
-
-    function closeReport() {
-      document.getElementById('reportModal').style.display = 'none';
-    }
-
-    function getNowStr() {
-      const d = new Date();
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-    }
-
-    function getFileDateStr(file) {
-      const d = new Date(file.lastModified);
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
     }
   </script>
 </body>
