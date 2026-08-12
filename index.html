@@ -23,7 +23,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
 
-    /* Header com Tag de Versão */
+    /* Header App */
     .app-header { background: var(--surface); padding: 16px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
     .app-header h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: 1px; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .app-header small { color: var(--gold); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
@@ -86,28 +86,75 @@
     .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
     .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
 
-    /* Tela de Pré-visualização do Relatório */
+    /* Preview tela de relatório */
     .report-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
     .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Layout do PDF para Impressão */
+    /* ==========================================================================
+       ESTILOS EXCLUSIVOS PARA IMPRESSÃO / PDF (RELATÓRIO COMERCIAL PREMIUM)
+       ========================================================================== */
     @media print {
-      .no-print, .nav-bar, .app-header { display: none !important; }
-      body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 11pt; }
-      .tab-content { display: block !important; max-width: 100% !important; padding: 0 !important; }
+      /* Oculta tudo o que não for a área do relatório */
+      body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 10pt; }
+      .no-print, .nav-bar, .app-header, #tabDashboard, #tabAdmin { display: none !important; }
       
-      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
-      .pdf-header h2 { font-size: 15pt; color: #000; margin-bottom: 2px; text-transform: uppercase; font-weight: 800; }
-      .pdf-header p { font-size: 8.5pt; color: #333; }
+      #tabReport { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+      
+      /* Cabeçalho Profissional */
+      .pdf-brand-header {
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      .pdf-title-block h1 { font-size: 18pt; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+      .pdf-title-block p { font-size: 9pt; color: #475569; font-weight: 600; margin-top: 2px; }
+      .pdf-meta-block { text-align: right; font-size: 8.5pt; color: #334155; line-height: 1.3; }
+      .pdf-meta-block strong { color: #0f172a; }
 
-      .pdf-section { margin-bottom: 14px; page-break-inside: avoid; }
-      .pdf-section-title { font-size: 9.5pt; font-weight: 800; padding: 4px 6px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 6px; display: flex; justify-content: space-between; }
-      .pdf-section-title.alert { border-left-color: var(--red); background: var(--red-light); color: var(--red); }
+      /* Estrutura de Seções / Rondas */
+      .pdf-event-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        page-break-inside: avoid;
+        overflow: hidden;
+      }
+      .pdf-event-header {
+        background: #f8fafc;
+        padding: 8px 12px;
+        border-bottom: 1px solid #cbd5e1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .pdf-event-title { font-size: 11pt; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+      .pdf-badge { padding: 2px 6px; border-radius: 3px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
+      .pdf-badge-ronda { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+      .pdf-badge-alerta { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+      .pdf-event-body { padding: 12px; }
+      .pdf-event-obs { background: #f1f5f9; border-left: 3px solid #475569; padding: 6px 10px; font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
+
+      /* Grade de Imagens de Alta Precisão */
+      .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .pdf-img-box { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; height: 140px; background: #000; }
+      .pdf-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
       
-      .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-      .pdf-img-card { border: 1px solid #ccc; border-radius: 3px; overflow: hidden; height: 115px; background: #000; }
-      .pdf-img-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .pdf-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 8pt;
+        color: #94a3b8;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 4px;
+      }
     }
   </style>
 </head>
@@ -119,9 +166,9 @@
     <small id="headerCompanyDisplay">SISTEMA DE CONTROLE DE PLANTÃO</small>
   </header>
 
-  <!-- TAB 1: PAINEL DE REGISTROS (DASHBOARD) -->
-  <main id="tabDashboard" class="tab-content active">
-    <div class="card no-print">
+  <!-- TAB 1: PAINEL DE REGISTROS -->
+  <main id="tabDashboard" class="tab-content active no-print">
+    <div class="card">
       <div class="card-title">
         <span>➕ REGISTRAR EVENTO</span>
       </div>
@@ -176,7 +223,7 @@
       </button>
     </div>
 
-    <div class="no-print" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
       <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted);">REGISTROS DO PLANTÃO</h3>
       <button class="btn btn-outline btn-sm" onclick="clearAllData()">🗑️ Limpar Tudo</button>
     </div>
@@ -185,7 +232,7 @@
   </main>
 
   <!-- TAB 2: PAINEL ADMINISTRATIVO -->
-  <section id="tabAdmin" class="tab-content">
+  <section id="tabAdmin" class="tab-content no-print">
     <div class="card">
       <div class="card-title">⚙️ CONFIGURAÇÃO DA ESTAMPA</div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
@@ -213,7 +260,6 @@
       </div>
     </div>
 
-    <!-- Bloco de Informações da Versão -->
     <div class="card" style="text-align: center; background: rgba(0,0,0,0.2);">
       <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold);">SISTEMA GUARDIÃO PRO</div>
       <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Versão Instalada: <strong id="adminVersionDisplay" style="color: #fff;">v2.1.0</strong></div>
@@ -225,7 +271,7 @@
     <div class="card no-print">
       <div class="card-title">📄 RELATÓRIO DO PLANTÃO</div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-        Abaixo está o resumo dos eventos salvos. Ao imprimir ou salvar em PDF, somente os cabeçalhos das ocorrências e as miniaturas com foto/estampa serão exibidos.
+        Abaixo está a pré-visualização. Clique no botão abaixo para gerar a versão limpa e profissional para impressão ou envio.
       </p>
       <button class="btn btn-gold" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
     </div>
@@ -253,9 +299,7 @@
   <canvas id="stampCanvas" style="display: none;"></canvas>
 
   <script>
-    // DECLARAÇÃO DA VERSÃO DO SISTEMA
     const APP_VERSION = "v2.1.0";
-
     let db = null;
     let selectedFiles = [];
     
@@ -272,7 +316,6 @@
     };
 
     function initDB() {
-      // Exibe a versão na interface
       document.getElementById('appVersionDisplay').innerText = APP_VERSION;
       document.getElementById('adminVersionDisplay').innerText = APP_VERSION;
 
@@ -424,7 +467,7 @@
         identifier: identifier,
         priority: priority,
         observation: obs,
-        timestamp: timestamp.toLocaleString(),
+        timestamp: timestamp.toLocaleString('pt-BR'),
         images: processedImages
       };
 
@@ -476,8 +519,8 @@
 
             config.fields.forEach(f => {
               if (!f.active) return;
-              if (f.id === 'date') line1.push(dateObj.toLocaleDateString());
-              else if (f.id === 'time') line1.push(dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+              if (f.id === 'date') line1.push(dateObj.toLocaleDateString('pt-BR'));
+              else if (f.id === 'time') line1.push(dateObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}));
               else if (f.id === 'identifier') line1.push(identifier.toUpperCase());
               else if (f.id === 'agent' && config.agent) line2.push(`AGT: ${config.agent}`);
               else if (f.id === 'company' && config.company) line2.push(config.company);
@@ -652,19 +695,35 @@
       tx.objectStore("records").getAll().onsuccess = (e) => {
         const records = e.target.result;
 
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('pt-BR');
+        const formattedTime = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
         let html = `
-          <div class="pdf-header print-only">
-            <h2>${config.company || 'RELATÓRIO PATRIMONIAL'}</h2>
-            <p><strong>Agente:</strong> ${config.agent || 'N/A'} | <strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+          <!-- CABEÇALHO INSTITUCIONAL DO PDF -->
+          <div class="pdf-brand-header">
+            <div class="pdf-title-block">
+              <h1>${config.company || 'RELATÓRIO PATRIMONIAL'}</h1>
+              <p>RELATÓRIO FOTOGRÁFICO DE INSPEÇÃO E PLANTÃO</p>
+            </div>
+            <div class="pdf-meta-block">
+              <div><strong>Responsável:</strong> ${config.agent || 'N/A'}</div>
+              <div><strong>Emissão:</strong> ${formattedDate} às ${formattedTime}</div>
+              <div><strong>Sistema:</strong> GUARDIÃO PRO ${APP_VERSION}</div>
+            </div>
           </div>
         `;
 
         if (records.length === 0) {
-          html += `<p style="text-align:center; color:#666; padding: 20px;">Nenhum evento gravado no relatório.</p>`;
+          html += `
+            <div style="text-align: center; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 40px; margin-top: 20px;">
+              <p style="font-size: 10pt; color: #64748b; font-weight: 600;">Nenhum registro ou ronda foi gravado para este relatório.</p>
+            </div>`;
         } else {
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
+            // Visualização em tela (Preview)
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -673,44 +732,55 @@
                 </div>
                 <div class="report-summary-info">
                   ${rec.observation ? `<div><strong>Obs:</strong> ${rec.observation}</div>` : ''}
-                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) estampadas prontas para impressão.</div>
+                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) registrada(s).</div>
                 </div>
               </div>
             `;
 
+            // Layout Comercial Premium para Impressão
             html += `
-              <div class="pdf-section print-only" style="display: none;">
-                <div class="pdf-section-title ${isOcorrencia ? 'alert' : ''}">
-                  <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'} ${rec.identifier} ${isOcorrencia ? `- PRIORIDADE ${rec.priority}` : ''}</span>
-                  <small style="font-weight:normal; font-size: 0.75rem;">${rec.timestamp}</small>
+              <div class="pdf-event-card">
+                <div class="pdf-event-header">
+                  <div class="pdf-event-title">
+                    <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'}</span>
+                    <span>${rec.identifier}</span>
+                  </div>
+                  <span class="pdf-badge ${isOcorrencia ? 'pdf-badge-alerta' : 'pdf-badge-ronda'}">
+                    ${isOcorrencia ? 'OCORRÊNCIA (' + rec.priority + ')' : 'RONDA OPERACIONAL'}
+                  </span>
                 </div>
-                ${rec.observation ? `<p style="font-size:0.85rem; margin-bottom:8px; color:#333;"><strong>Observações:</strong> ${rec.observation}</p>` : ''}
-                
-                <div class="pdf-grid">
-                  ${rec.images.map(img => `
-                    <div class="pdf-img-card">
-                      <img src="${img.data}">
+
+                <div class="pdf-event-body">
+                  <div style="font-size: 8pt; color: #64748b; margin-bottom: 8px;">
+                    <strong>Horário do Registro:</strong> ${rec.timestamp}
+                  </div>
+
+                  ${rec.observation ? `
+                    <div class="pdf-event-obs">
+                      <strong>Observações Técnicas:</strong> ${rec.observation}
                     </div>
-                  `).join('')}
+                  ` : ''}
+
+                  <div class="pdf-grid">
+                    ${rec.images.map(img => `
+                      <div class="pdf-img-box">
+                        <img src="${img.data}">
+                      </div>
+                    `).join('')}
+                  </div>
                 </div>
               </div>
             `;
           });
         }
 
-        container.innerHTML = html;
-
-        const style = document.createElement('style');
-        style.innerHTML = `
-          @media screen {
-            .print-only { display: none !important; }
-          }
-          @media print {
-            .print-only { display: block !important; }
-            .report-summary-card { display: none !important; }
-          }
+        html += `
+          <div class="pdf-footer">
+            Documento emitido automaticamente via Guardião Pro - Sistema de Segurança Patrimonial
+          </div>
         `;
-        container.appendChild(style);
+
+        container.innerHTML = html;
       };
     }
 
