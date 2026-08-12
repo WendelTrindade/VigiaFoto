@@ -3,88 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO - Câmera Otimizada</title>
+  <title>GUARDIÃO - Gerador de Ronda</title>
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0d0d0d; color: #f8fafc; min-height: 100vh;
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: column; padding: 12px;
     }
 
     .app-bar {
       background: #171717; padding: 12px 16px; display: flex;
       justify-content: space-between; align-items: center; border-bottom: 2px solid #eab308;
+      border-radius: 8px; margin-bottom: 12px;
     }
     .brand-title h1 { font-size: 1.1rem; color: #ffffff; font-weight: 900; }
     .brand-title span { font-size: 0.6rem; color: #eab308; font-weight: 700; display: block; }
-    
-    .btn-admin {
-      background: #262626; color: #eab308; border: 1px solid #eab308;
-      padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
-    }
 
-    .container {
-      padding: 12px; max-width: 500px; margin: 0 auto; width: 100%;
-      flex: 1; display: flex; flex-direction: column; gap: 10px;
-    }
+    .container { max-width: 500px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 12px; }
 
-    .vigia-card { background: #171717; padding: 10px; border-radius: 10px; border: 1px solid #262626; }
-    .vigia-card label { font-size: 0.7rem; color: #eab308; font-weight: 800; display: block; margin-bottom: 4px; }
+    .card { background: #171717; padding: 12px; border-radius: 10px; border: 1px solid #262626; }
+    .card label { font-size: 0.75rem; color: #eab308; font-weight: 800; display: block; margin-bottom: 4px; }
     
-    .search-input {
+    .input-field, select {
       width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #404040;
-      background: #0d0d0d; color: #fff; font-size: 0.95rem; outline: none;
+      background: #0d0d0d; color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 8px;
     }
 
-    .badge-info {
-      margin-top: 8px; padding: 8px; background: #0d0d0d; border-radius: 6px;
-      font-size: 0.8rem; color: #d4d4d4; display: flex; flex-direction: column; gap: 2px;
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .btn-select {
+      width: 100%; padding: 16px; border: 2px dashed #eab308; border-radius: 10px;
+      background: #1a1805; color: #eab308; font-size: 1rem; font-weight: 800;
+      cursor: pointer; text-align: center; display: block; margin-top: 5px;
     }
 
-    .preview-card {
-      background: #000; border-radius: 10px; overflow: hidden;
-      border: 2px solid #262626; aspect-ratio: 3/4; position: relative;
-      display: flex; align-items: center; justify-content: center;
-    }
-    video, canvas { width: 100%; height: 100%; object-fit: cover; }
-
-    .rec-status {
-      position: absolute; top: 12px; left: 12px;
-      background: rgba(220, 38, 38, 0.9); color: white;
-      padding: 6px 12px; border-radius: 20px; font-weight: 800;
-      font-size: 0.75rem; display: none; align-items: center; gap: 6px; z-index: 10;
-    }
-    .rec-dot { width: 8px; height: 8px; background: white; border-radius: 50%; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-
-    .toast-success {
-      position: absolute; top: 10px; left: 10px; right: 10px;
-      background: #16a34a; color: white; text-align: center;
-      padding: 10px; border-radius: 8px; font-weight: 800; font-size: 0.85rem;
-      display: none; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    .btn-action {
+      width: 100%; padding: 14px; border: none; border-radius: 8px;
+      background: #16a34a; color: #fff; font-size: 1rem; font-weight: 900;
+      cursor: pointer; display: none; margin-top: 10px;
     }
 
-    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    
-    .btn {
-      padding: 15px 10px; border: none; border-radius: 10px;
-      font-size: 0.9rem; font-weight: 800; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+    /* Galeria de pré-visualização */
+    .preview-grid {
+      display: grid; grid-template-columns: repeat( auto-fill, minmax(90px, 1fr) );
+      gap: 8px; margin-top: 10px; max-height: 250px; overflow-y: auto;
     }
-    .btn-photo { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #000; }
-    .btn-video { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; }
-    .btn-stop { background: #eab308; color: #000; grid-column: span 2; display: none; }
+    .preview-item {
+      position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden;
+      border: 1px solid #404040; background: #000;
+    }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-tag {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.8); color: #eab308; font-size: 0.65rem;
+      font-weight: 800; text-align: center; padding: 2px 0;
+    }
 
-    .modal {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-      z-index: 100; padding: 20px; overflow-y: auto;
-    }
-    .modal-content { max-width: 450px; margin: 0 auto; background: #171717; padding: 15px; border-radius: 10px; }
-    .form-group { margin-bottom: 10px; }
-    .form-group label { font-size: 0.75rem; color: #a3a3a3; display: block; margin-bottom: 2px; }
-    .form-group input { width: 100%; padding: 8px; background: #0d0d0d; border: 1px solid #404040; color: #fff; border-radius: 4px; }
+    canvas { display: none; }
   </style>
 </head>
 <body>
@@ -92,282 +69,157 @@
   <div class="app-bar">
     <div class="brand-title">
       <h1>🛡️ GUARDIÃO</h1>
-      <span>CÂMERA ESTABILIZADA</span>
+      <span>PROCESSADOR DE FOTOS DA RONDA</span>
     </div>
-    <button class="btn-admin" id="btnOpenAdmin">⚙️ Admin</button>
   </div>
 
   <div class="container">
-    <div class="vigia-card">
-      <label for="searchVigia">AGENTE EM PLANTÃO:</label>
-      <input type="text" id="searchVigia" class="search-input" list="vigiasList" placeholder="Selecione o nome...">
-      <datalist id="vigiasList"></datalist>
+    <div class="card">
+      <label>AGENTE DA RONDA:</label>
+      <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA" placeholder="Nome do Agente">
 
-      <div class="badge-info">
-        <div>Posto: <strong id="lblPosto" style="color:#fff;">POSTO CENTRAL</strong></div>
-        <div>Local: <strong id="lblLocal" style="color:#eab308;">Obtendo GPS...</strong></div>
+      <div class="grid-2">
+        <div>
+          <label>Nº DA RONDA:</label>
+          <input type="number" id="numRonda" class="input-field" value="1" min="1">
+        </div>
+        <div>
+          <label>DATA/HORA:</label>
+
+          <select id="selectDataModo" class="input-field">
+            <option value="AGORA">Hora Atual (Automática)</option>
+            <option value="ARQUIVO">Hora Original da Foto</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="preview-card">
-      <div class="rec-status" id="recBadge"><div class="rec-dot"></div> GRAVANDO VÍDEO...</div>
-      <div class="toast-success" id="toastMsg">⚡ SALVO COM SUCESSO!</div>
+    <div class="card">
+      <label>SELECIONAR FOTOS DA GALERIA OU CÂMERA:</label>
+      <!-- Permite carregar várias fotos com qualidade original -->
+      <label for="fileGallery" class="btn-select">📂 SELECCIONAR FOTOS ( GALERIA )</label>
+      <input type="file" id="fileGallery" accept="image/*" multiple style="display: none;">
 
-      <video id="videoSource" autoplay playsinline style="display:none;"></video>
-      <canvas id="canvasDisplay"></canvas>
-    </div>
+      <div class="preview-grid" id="previewGrid"></div>
 
-    <div class="btn-group">
-      <button id="btnTakePhoto" class="btn btn-photo">📸 TIRAR FOTO</button>
-      <button id="btnStartRecord" class="btn btn-video">🎥 GRAVAR VÍDEO</button>
-      <button id="btnStopRecord" class="btn btn-stop">⏹️ PARAR GRAVAÇÃO</button>
+      <button id="btnProcess" class="btn-action">⚡ PROCESSAR E BAIXAR FOTOS</button>
     </div>
   </div>
 
-  <!-- Admin Modal -->
-  <div class="modal" id="adminModal">
-    <div class="modal-content">
-      <h3 style="color:#eab308; margin-bottom:10px;">Painel Admin</h3>
-      <div id="adminAuth">
-        <input type="password" id="adminPass" placeholder="Senha" style="width:100%; padding:8px; margin-bottom:10px;">
-        <button onclick="loginAdmin()" style="width:100%; padding:8px; background:#eab308; font-weight:bold;">Entrar</button>
-      </div>
-      <div id="adminBody" style="display:none;">
-        <div class="form-group"><label>Nome Agente:</label><input type="text" id="addNome"></div>
-        <div class="form-group"><label>Posto:</label><input type="text" id="addPosto" value="POSTO CENTRAL"></div>
-        <button onclick="addVigia()" style="width:100%; padding:8px; background:#16a34a; color:#fff; font-weight:bold; border:none; border-radius:4px;">Salvar Agente</button>
-        <button onclick="closeAdmin()" style="width:100%; padding:8px; background:#dc2626; color:#fff; font-weight:bold; border:none; border-radius:4px; margin-top:10px;">Fechar</button>
-      </div>
-    </div>
-  </div>
+  <canvas id="workCanvas"></canvas>
 
   <script>
-    const ADMIN_PASS = '28642155';
-    let dbVigias = JSON.parse(localStorage.getItem('dbVigias')) || [
-      { id: 1, nome: 'CARLOS SILVA', posto: 'POSTO CENTRAL', servico: 'GUARDIÃO' }
-    ];
-    let currentVigia = dbVigias[0];
-    let gpsAddress = 'LOCALIZANDO GPS...';
+    const fileGallery = document.getElementById('fileGallery');
+    const previewGrid = document.getElementById('previewGrid');
+    const btnProcess = document.getElementById('btnProcess');
+    const canvas = document.getElementById('workCanvas');
+    const ctx = canvas.getContext('2d');
 
-    const videoSource = document.getElementById('videoSource');
-    const canvas = document.getElementById('canvasDisplay');
-    const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: false });
-    const toastMsg = document.getElementById('toastMsg');
-    const recBadge = document.getElementById('recBadge');
+    let selectedFiles = [];
 
-    const btnTakePhoto = document.getElementById('btnTakePhoto');
-    const btnStartRecord = document.getElementById('btnStartRecord');
-    const btnStopRecord = document.getElementById('btnStopRecord');
+    fileGallery.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
 
-    let mediaRecorder;
-    let recordedChunks = [];
-    let audioStream = null;
+      selectedFiles = files;
+      previewGrid.innerHTML = '';
 
-    function init() {
-      renderList();
-      selectVigia(dbVigias[0].nome);
-      initCamera();
-      initGPS();
-    }
+      const numRonda = document.getElementById('numRonda').value;
 
-    function renderList() {
-      const list = document.getElementById('vigiasList');
-      list.innerHTML = '';
-      dbVigias.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v.nome;
-        list.appendChild(opt);
+      files.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.innerHTML = `
+            <img src="${event.target.result}">
+            <div class="preview-tag">Foto ${idx + 1} - Ronda ${numRonda}</div>
+          `;
+          previewGrid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnProcess.style.display = 'block';
+    });
+
+    btnProcess.addEventListener('click', async () => {
+      const agente = document.getElementById('txtAgente').value.toUpperCase() || 'AGENTE';
+      const numRonda = document.getElementById('numRonda').value || '1';
+      const modoData = document.getElementById('selectDataModo').value;
+
+      btnProcess.disabled = true;
+      btnProcess.innerText = "PROCESSANDO...";
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const numFoto = i + 1;
+        
+        let timeStr = "";
+        if (modoData === "AGORA") {
+          const now = new Date();
+          timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        } else {
+          const fileDate = new Date(file.lastModified);
+          timeStr = `${String(fileDate.getDate()).padStart(2,'0')}/${String(fileDate.getMonth()+1).padStart(2,'0')}/${fileDate.getFullYear()} ${String(fileDate.getHours()).padStart(2,'0')}:${String(fileDate.getMinutes()).padStart(2,'0')}`;
+        }
+
+        await processAndDownload(file, agente, numRonda, numFoto, timeStr);
+      }
+
+      btnProcess.disabled = false;
+      btnProcess.innerText = "⚡ PROCESSAR E BAIXAR FOTOS";
+      alert("Todas as fotos foram processadas e salvas com sucesso!");
+    });
+
+    function processAndDownload(file, agente, ronda, fotoNum, dataHoraStr) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // Mantém a qualidade original da resolução da foto
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          // Desenha a foto na resolução nativa
+          ctx.drawImage(img, 0, 0);
+
+          // Configura o carimbo proporcional à foto
+          const w = img.width;
+          const h = img.height;
+          const footerH = h * 0.18;
+          const footerY = h - footerH;
+
+          // Tarja preta de fundo
+          ctx.fillStyle = 'rgba(13, 13, 13, 0.85)';
+          ctx.fillRect(0, footerY, w, footerH);
+
+          // Linha amarela de destaque
+          ctx.fillStyle = '#eab308';
+          ctx.fillRect(0, footerY, w, footerH * 0.04);
+
+          const padX = w * 0.04;
+
+          // Linha 1: Numeração sequencial (FOTO X DA RONDA Y)
+          ctx.fillStyle = '#eab308';
+          ctx.font = `900 ${footerH * 0.32}px sans-serif`;
+          ctx.fillText(`FOTO ${fotoNum} - RONDA ${ronda}`, padX, footerY + (footerH * 0.40));
+
+          // Linha 2: Agente e Data
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `700 ${footerH * 0.22}px sans-serif`;
+          ctx.fillText(`AGENTE: ${agente}  |  ${dataHoraStr}`, padX, footerY + (footerH * 0.75));
+
+          // Baixa a imagem pronta
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/jpeg', 0.95);
+          a.download = `RONDA_${ronda}_FOTO_${fotoNum}.jpg`;
+          a.click();
+
+          resolve();
+        };
+        img.src = URL.createObjectURL(file);
       });
     }
-
-    function selectVigia(nome) {
-      const found = dbVigias.find(v => v.nome.toUpperCase() === nome.toUpperCase());
-      if (found) {
-        currentVigia = found;
-        document.getElementById('lblPosto').innerText = currentVigia.posto;
-        document.getElementById('lblLocal').innerText = gpsAddress;
-      }
-    }
-
-    document.getElementById('searchVigia').addEventListener('input', (e) => selectVigia(e.target.value));
-
-    // Configuração otimizada para estabilizar e melhorar o sensor de imagem
-    async function initCamera() {
-      try {
-        const constraints = {
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            frameRate: { ideal: 30, max: 30 }
-          },
-          audio: false
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoSource.srcObject = stream;
-        videoSource.play();
-        requestAnimationFrame(renderLoop);
-      } catch (e) {
-        // Fallback para dispositivos simples
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        videoSource.srcObject = stream;
-        videoSource.play();
-        requestAnimationFrame(renderLoop);
-      }
-    }
-
-    function initGPS() {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
-            const data = await res.json();
-            gpsAddress = `${(data.address.road || 'RUA').toUpperCase()}, ${(data.address.city || data.address.town || 'CIDADE').toUpperCase()}`;
-            document.getElementById('lblLocal').innerText = gpsAddress;
-          } catch (e) { gpsAddress = "GPS ATIVO"; }
-        });
-      }
-    }
-
-    function renderLoop() {
-      const w = videoSource.videoWidth || 1280;
-      const h = videoSource.videoHeight || 720;
-      
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-
-      // Aplica suavização e ajuste fino de Nitidez/Contraste diretamente na renderização
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.filter = 'contrast(1.05) brightness(1.02) saturate(1.05)';
-
-      ctx.drawImage(videoSource, 0, 0, w, h);
-      
-      // Remove o filtro para carimbo ser desenhado com cores puras
-      ctx.filter = 'none';
-      applyStamp(ctx, w, h);
-      
-      requestAnimationFrame(renderLoop);
-    }
-
-    function applyStamp(targetCtx, w, h) {
-      const footerH = h * 0.25;
-      const footerY = h - footerH;
-
-      targetCtx.fillStyle = '#0d0d0d';
-      targetCtx.fillRect(0, footerY, w, footerH);
-
-      targetCtx.fillStyle = '#eab308';
-      targetCtx.fillRect(0, footerY, w, footerH * 0.03);
-
-      const padX = w * 0.04;
-      const now = new Date();
-      const horaStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-      const dataStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
-
-      targetCtx.fillStyle = '#eab308';
-      targetCtx.font = `900 ${footerH * 0.28}px sans-serif`;
-      targetCtx.fillText(horaStr, padX, footerY + (footerH * 0.32));
-
-      targetCtx.fillStyle = '#a3a3a3';
-      targetCtx.font = `700 ${footerH * 0.12}px sans-serif`;
-      targetCtx.fillText(`DATA: ${dataStr}`, padX, footerY + (footerH * 0.48));
-
-      targetCtx.fillStyle = '#ffffff';
-      targetCtx.font = `800 ${footerH * 0.12}px sans-serif`;
-      targetCtx.fillText(`AGENTE: ${currentVigia.nome}`, padX, footerY + (footerH * 0.68));
-
-      targetCtx.fillStyle = '#d4d4d4';
-      targetCtx.font = `600 ${footerH * 0.11}px sans-serif`;
-      targetCtx.fillText(`LOCAL: ${gpsAddress}`, padX, footerY + (footerH * 0.85));
-    }
-
-    // Capture Direta da Tela do Canvas (Zero Demora, Câmera Interna)
-    btnTakePhoto.addEventListener('click', () => {
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-      saveFile(dataUrl, `PONTO_FOTO_${currentVigia.nome.replace(/\s+/g, '_')}_${Date.now()}.jpg`);
-    });
-
-    // Gravação de Vídeo
-    btnStartRecord.addEventListener('click', async () => {
-      recordedChunks = [];
-      try {
-        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const canvasStream = canvas.captureStream(30);
-        const audioTrack = audioStream.getAudioTracks()[0];
-        if (audioTrack) canvasStream.addTrack(audioTrack);
-
-        mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) recordedChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          saveFile(URL.createObjectURL(blob), `PONTO_VIDEO_${currentVigia.nome.replace(/\s+/g, '_')}_${Date.now()}.webm`);
-          stopMicrophone();
-        };
-
-        mediaRecorder.start();
-        recBadge.style.display = 'flex';
-        btnTakePhoto.style.display = 'none';
-        btnStartRecord.style.display = 'none';
-        btnStopRecord.style.display = 'flex';
-
-      } catch (err) {
-        alert("Erro ao acessar o microfone para gravação.");
-      }
-    });
-
-    btnStopRecord.addEventListener('click', () => {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-      }
-      recBadge.style.display = 'none';
-      btnStopRecord.style.display = 'none';
-      btnTakePhoto.style.display = 'flex';
-      btnStartRecord.style.display = 'flex';
-    });
-
-    function stopMicrophone() {
-      if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-      }
-    }
-
-    function saveFile(url, fileName) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-
-      toastMsg.style.display = 'block';
-      setTimeout(() => { toastMsg.style.display = 'none'; }, 1500);
-    }
-
-    // Admin
-    document.getElementById('btnOpenAdmin').onclick = () => document.getElementById('adminModal').style.display = 'block';
-    function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
-    function loginAdmin() {
-      if (document.getElementById('adminPass').value === ADMIN_PASS) {
-        document.getElementById('adminAuth').style.display = 'none';
-        document.getElementById('adminBody').style.display = 'block';
-      }
-    }
-    function addVigia() {
-      const nome = document.getElementById('addNome').value;
-      if (!nome) return;
-      dbVigias.push({ id: Date.now(), nome: nome.toUpperCase(), posto: document.getElementById('addPosto').value.toUpperCase() });
-      localStorage.setItem('dbVigias', JSON.stringify(dbVigias));
-      renderList();
-      closeAdmin();
-    }
-
-    window.onload = init;
   </script>
 </body>
 </html>
