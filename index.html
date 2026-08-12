@@ -3,173 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GUARDIÃO - Gestor de Plantão</title>
+  <title>GUARDIÃO - Sistema de Ronda</title>
+  
   <style>
-    :root { --gold: #eab308; --danger: #ef4444; --warning: #f97316; --success: #22c55e; }
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: sans-serif; }
-    body { background: #0d0d0d; color: #fff; padding: 12px; }
-
-    .app-bar { background: #171717; padding: 15px; border-bottom: 3px solid var(--gold); border-radius: 8px; margin-bottom: 12px; text-align: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0d0d0d; color: #f8fafc; padding: 12px; }
+    
+    .app-bar { background: #171717; padding: 15px; border-bottom: 3px solid #eab308; border-radius: 8px; text-align: center; margin-bottom: 15px; }
     .card { background: #171717; padding: 15px; border-radius: 10px; border: 1px solid #262626; margin-bottom: 12px; }
     .input-field { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #404040; background: #0d0d0d; color: #fff; margin-bottom: 8px; }
-    .btn-action { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--success); color: #fff; font-weight: 900; cursor: pointer; margin-top: 5px; }
     
-    /* Layout do Relatório - 3 por linha */
-    .report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    .report-img-card { border: 2px solid #333; padding: 2px; border-radius: 4px; aspect-ratio: 4/3; }
-    .report-img-card img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .sec-ronda { border-left: 5px solid var(--gold); padding-left: 10px; margin-bottom: 25px; }
-    .sec-ocorrencia { border-left: 5px solid var(--danger); padding-left: 10px; margin-bottom: 25px; background: #1a0a0a; padding: 10px; }
-    
-    .badge-prio { padding: 2px 8px; border-radius: 4px; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; }
+    .btn-select { width: 100%; padding: 14px; border: 2px dashed #eab308; background: #1a1805; color: #eab308; cursor: pointer; text-align: center; display: block; border-radius: 8px; font-weight: 800; }
+    .btn-process { width: 100%; padding: 14px; background: #16a34a; border: none; border-radius: 8px; color: #fff; font-weight: 900; margin-top: 10px; cursor: pointer; }
+    .btn-report { width: 100%; padding: 14px; background: #2563eb; border: none; border-radius: 8px; color: #fff; font-weight: 900; margin-top: 10px; cursor: pointer; }
+
+    /* Cards de Conferência */
+    .topic-card { border: 1px solid #404040; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: #1a1a1a; }
+    .topic-title { color: #eab308; font-weight: 800; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .thumb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .thumb { aspect-ratio: 1; border-radius: 4px; border: 1px solid #444; overflow: hidden; background: #000; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Modal Relatório */
+    .modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 100; overflow-y: auto; padding: 20px; color: #000; }
     
     @media print {
-      body { background: #fff; color: #000; }
-      .container, .app-bar { display: none; }
-      #reportModal { position: static; display: block !important; background: white; }
+        .no-print { display: none; }
+        .modal { display: block !important; position: static; background: white; }
     }
   </style>
 </head>
 <body>
 
-  <div class="app-bar"><h1>🛡️ GUARDIÃO</h1></div>
+  <div class="app-bar no-print"><h1>🛡️ GUARDIÃO</h1></div>
 
-  <div class="container">
+  <div class="container no-print">
     <div class="card">
-        <label>AGENTE:</label>
-        <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA">
+      <label>AGENTE:</label>
+      <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA">
     </div>
 
-    <div class="card" id="panelRonda">
-        <label>🔄 NOVA RONDA</label>
-        <input type="number" id="numRonda" class="input-field" value="1">
-        <input type="file" id="fileRonda" accept="image/*" multiple style="display:none">
-        <label for="fileRonda" class="btn-action" style="display:block; text-align:center;">SELECIONAR FOTOS</label>
-        <button id="btnProcessRonda" class="btn-action" style="background:var(--gold); display:none;">PROCESSAR RONDA</button>
+    <div class="card">
+      <label>🔄 NOVA RONDA (1 a 10)</label>
+      <input type="number" id="numRonda" class="input-field" value="1" min="1" max="10">
+      <label for="fileRonda" class="btn-select">SELECIONAR FOTOS</label>
+      <input type="file" id="fileRonda" multiple style="display:none">
+      <button id="btnProcess" class="btn-process">PROCESSAR E EXIBIR RONDA</button>
     </div>
 
-    <div class="card" id="panelOcorrencia">
-        <label>⚠️ NOVA OCORRÊNCIA</label>
-        <select id="selectPrio" class="input-field">
-            <option value="BAIXA" style="color:var(--success)">🟢 BAIXA</option>
-            <option value="MÉDIA" style="color:var(--warning)">🟠 MÉDIA</option>
-            <option value="ALTA" style="color:var(--danger)">🔴 ALTA</option>
-        </select>
-        <input type="text" id="txtLocal" class="input-field" placeholder="Local da Ocorrência">
-        <input type="file" id="fileOcorrencia" accept="image/*" multiple style="display:none">
-        <label for="fileOcorrencia" class="btn-action" style="display:block; text-align:center;">SELECIONAR FOTOS</label>
-        <button id="btnProcessOcorrencia" class="btn-action" style="background:var(--danger); display:none;">REGISTRAR OCORRÊNCIA</button>
-    </div>
-
-    <button onclick="generateReport()" class="btn-action" style="background:#2563eb">📋 GERAR RELATÓRIO FINAL</button>
+    <div id="topicContainer"></div>
+    <button onclick="openReport()" class="btn-report">📋 GERAR RELATÓRIO PDF</button>
   </div>
 
-  <div id="reportModal" class="card" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; overflow-y:auto; background: #fff; color: #000;">
-      <div style="padding: 20px;">
-          <h2>RELATÓRIO DE PLANTÃO</h2>
+  <!-- Modal do Relatório -->
+  <div id="reportModal" class="modal">
+      <div style="max-width: 800px; margin: auto;">
+          <h2 style="border-bottom: 2px solid #000; padding-bottom: 10px;">RELATÓRIO DE PLANTÃO - GUARDIÃO</h2>
           <div id="repContent"></div>
-          <button onclick="window.print()" class="btn-action">IMPRIMIR / PDF</button>
-          <button onclick="document.getElementById('reportModal').style.display='none'" class="btn-action" style="background:gray">FECHAR</button>
+          <br>
+          <button onclick="window.print()" class="btn-process no-print">IMPRIMIR / SALVAR PDF</button>
+          <button onclick="document.getElementById('reportModal').style.display='none'" class="btn-process no-print" style="background:#666">FECHAR</button>
       </div>
   </div>
 
-  <canvas id="canvas" style="display:none;"></canvas>
+  <canvas id="canvas" style="display:none"></canvas>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let db;
-    
-    const request = indexedDB.open("GuardiaoDB", 3);
-    request.onupgradeneeded = (e) => { db = e.target.result; if(!db.objectStoreNames.contains("regs")) db.createObjectStore("regs", { autoIncrement: true }); };
-    request.onsuccess = (e) => { db = e.target.result; };
 
-    document.getElementById('fileRonda').addEventListener('change', () => document.getElementById('btnProcessRonda').style.display = 'block');
-    document.getElementById('fileOcorrencia').addEventListener('change', () => document.getElementById('btnProcessOcorrencia').style.display = 'block');
+    const request = indexedDB.open("GuardiaoDB", 5);
+    request.onupgradeneeded = (e) => { db = e.target.result; db.createObjectStore("regs", { autoIncrement: true }); };
+    request.onsuccess = (e) => { db = e.target.result; loadTopics(); };
 
-    function getFormattedTime() {
-        const n = new Date();
-        return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
-    }
+    document.getElementById('btnProcess').onclick = async () => {
+        const files = document.getElementById('fileRonda').files;
+        let num = parseInt(document.getElementById('numRonda').value);
+        
+        if(num > 10) { alert("Limite máximo de 10 rondas atingido!"); return; }
 
-    async function processAndSave(files, type, meta) {
-        const timeStamp = getFormattedTime(); // Hora do clique
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         let processed = [];
         
-        for(let i=0; i<files.length; i++) {
-            const dataURL = await drawStamp(files[i], type, meta, i+1, files.length, timeStamp);
-            processed.push(dataURL);
+        for(let file of files) {
+            processed.push(await drawStamp(file, num, time));
         }
         
         const tx = db.transaction("regs", "readwrite");
-        tx.objectStore("regs").add({ type, meta, images: processed, time: timeStamp, date: new Date().toLocaleDateString() });
-        
-        alert("Salvo com sucesso às " + timeStamp);
-        location.reload();
-    }
-
-    document.getElementById('btnProcessRonda').onclick = () => {
-        processAndSave(document.getElementById('fileRonda').files, 'RONDA', { num: document.getElementById('numRonda').value });
+        tx.objectStore("regs").add({ type: 'RONDA', num, time, images: processed });
+        tx.oncomplete = () => { 
+            loadTopics(); 
+            document.getElementById('numRonda').value = num + 1; // Incrementa automaticamente
+        };
     };
 
-    document.getElementById('btnProcessOcorrencia').onclick = () => {
-        processAndSave(document.getElementById('fileOcorrencia').files, 'OCORRENCIA', { prio: document.getElementById('selectPrio').value, local: document.getElementById('txtLocal').value });
-    };
-
-    function drawStamp(file, type, meta, idx, total, timeStamp) {
+    function drawStamp(file, num, time) {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => {
                 canvas.width = img.width; canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
-                
-                const color = type === 'RONDA' ? '#eab308' : (meta.prio === 'ALTA' ? '#ef4444' : (meta.prio === 'MÉDIA' ? '#f97316' : '#22c55e'));
-                const h = img.height * 0.25; // Aumentei um pouco a altura para caber a hora
-                const y = img.height - h;
-                
+                const h = img.height * 0.2;
                 ctx.fillStyle = 'rgba(0,0,0,0.85)';
-                ctx.fillRect(0, y, img.width, h);
-                ctx.fillStyle = color;
-                ctx.fillRect(0, y, img.width, h*0.06); 
-                
-                ctx.fillStyle = '#fff';
-                ctx.font = `bold ${h*0.22}px sans-serif`;
-                
-                // Texto principal
-                const title = type === 'RONDA' ? `RONDA Nº ${meta.num}` : `⚠️ OCORRÊNCIA | PRIORIDADE: ${meta.prio}`;
-                ctx.fillText(title, 40, y + h*0.3);
-                
-                // Texto meio (Agente/Local)
-                ctx.font = `${h*0.18}px sans-serif`;
-                const sub = type === 'RONDA' ? `AGENTE: ${document.getElementById('txtAgente').value}` : `LOCAL: ${meta.local}`;
-                ctx.fillText(sub, 40, y + h*0.6);
-
-                // Texto hora (Nova linha)
+                ctx.fillRect(0, img.height-h, img.width, h);
                 ctx.fillStyle = '#eab308';
-                ctx.fillText(`REGISTRO: ${timeStamp}  |  FOTO ${idx}/${total}`, 40, y + h*0.85);
-                
+                ctx.font = `bold ${h*0.3}px sans-serif`;
+                ctx.fillText(`RONDA ${num} | ${time} | AGENTE: ${document.getElementById('txtAgente').value}`, 50, img.height - h*0.4);
                 resolve(canvas.toDataURL('image/jpeg', 0.9));
             };
             img.src = URL.createObjectURL(file);
         });
     }
 
-    function generateReport() {
+    function loadTopics() {
+        const container = document.getElementById('topicContainer');
+        container.innerHTML = '';
         const tx = db.transaction("regs", "readonly");
         tx.objectStore("regs").getAll().onsuccess = (e) => {
-            const html = e.target.result.map(reg => `
-                <div class="${reg.type === 'RONDA' ? 'sec-ronda' : 'sec-ocorrencia'}">
-                    <h3>
-                        ${reg.type === 'RONDA' ? '🔄 RONDA Nº '+reg.meta.num : '⚠️ OCORRÊNCIA - <span class="badge-prio" style="color:'+(reg.meta.prio==='ALTA'?'red':reg.meta.prio==='MÉDIA'?'orange':'green')+'">'+reg.meta.prio+'</span>'}
-                        <span style="font-size:0.9rem; color:#666; float:right;">Às ${reg.time}</span>
-                    </h3>
-                    <div class="report-grid">
-                        ${reg.images.map(img => `<div class="report-img-card"><img src="${img}"></div>`).join('')}
-                    </div>
-                </div>
-            `).join('');
-            document.getElementById('repContent').innerHTML = html;
+            e.target.result.forEach((reg) => {
+                const div = document.createElement('div');
+                div.className = 'topic-card';
+                div.innerHTML = `
+                    <div class="topic-title"><span>🔄 RONDA ${reg.num}</span> <span>${reg.time}</span></div>
+                    <div class="thumb-grid">${reg.images.map(img => `<div class="thumb"><img src="${img}"></div>`).join('')}</div>
+                `;
+                container.appendChild(div);
+            });
+        };
+    }
+
+    function openReport() {
+        const repContent = document.getElementById('repContent');
+        repContent.innerHTML = '';
+        const tx = db.transaction("regs", "readonly");
+        tx.objectStore("regs").getAll().onsuccess = (e) => {
+            e.target.result.forEach(reg => {
+                const sec = document.createElement('div');
+                sec.innerHTML = `<h3>RONDA ${reg.num} - ${reg.time}</h3>
+                                 <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px;">
+                                 ${reg.images.map(img => `<img src="${img}" style="width:100%; border:1px solid #ccc;">`).join('')}
+                                 </div>`;
+                repContent.appendChild(sec);
+            });
             document.getElementById('reportModal').style.display = 'block';
         };
     }
