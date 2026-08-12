@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO - Sistema de Plantão</title>
+  <title>GUARDIÃO - Sistema de Plantão e Relatórios</title>
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -66,6 +66,7 @@
     }
     .preview-item img { width: 100%; height: 100%; object-fit: cover; }
 
+    /* Modal do Relatório Final */
     .report-modal {
       display: none; position: fixed; inset: 0; background: #000;
       z-index: 100; padding: 15px; overflow-y: auto; color: #000;
@@ -98,14 +99,16 @@
   </div>
 
   <div class="container">
+    <!-- Configuração do Agente e Posto -->
     <div class="card">
       <label>AGENTE EM PLANTÃO:</label>
       <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA" placeholder="Nome do Agente">
 
-      <label>LOCAL / POSTO DE TRABALHO:</label>
-      <input type="text" id="txtPosto" class="input-field" value="POSTO CENTRAL" placeholder="Ex: SETOR A / RUA 01">
+      <label>POSTO DE TRABALHO / SETOR:</label>
+      <input type="text" id="txtPosto" class="input-field" value="POSTO CENTRAL" placeholder="Ex: SETOR A">
     </div>
 
+    <!-- Abas: Ronda e Ocorrência -->
     <div class="tabs">
       <button class="tab-btn active" id="tabRonda" onclick="switchTab('RONDA')">🔄 RONDA</button>
       <button class="tab-btn" id="tabOcorrencia" onclick="switchTab('OCORRENCIA')">⚠️ OCORRÊNCIA</button>
@@ -119,7 +122,7 @@
           <input type="number" id="numRonda" class="input-field" value="1" min="1">
         </div>
         <div>
-          <label>DATA/HORA DA ESTAMPA:</label>
+          <label>HORA DA ESTAMPA:</label>
           <select id="selectDataRonda" class="input-field">
             <option value="AGORA">Hora Atual (Automática)</option>
             <option value="ARQUIVO">Hora Original da Foto</option>
@@ -127,7 +130,7 @@
         </div>
       </div>
 
-      <label for="fileRonda" class="btn-select">📂 SELECCIONAR FOTOS DA RONDA</label>
+      <label for="fileRonda" class="btn-select">📂 SELECIONAR FOTOS DA RONDA</label>
       <input type="file" id="fileRonda" accept="image/*" multiple style="display: none;">
 
       <div class="preview-grid" id="previewRonda"></div>
@@ -147,42 +150,42 @@
         </div>
         <div>
           <label>LOCAL ESPECÍFICO:</label>
-          <input type="text" id="txtLocalOcorrencia" class="input-field" placeholder="Ex: PORTÃO DE ACESSO">
+          <input type="text" id="txtLocalOcorrencia" class="input-field" placeholder="Ex: PORTÃO B">
         </div>
       </div>
 
       <label>DESCRIÇÃO DA OCORRÊNCIA:</label>
       <textarea id="txtDescOcorrencia" class="input-field" rows="2" placeholder="Descreva o ocorrido..."></textarea>
 
-      <label for="fileOcorrencia" class="btn-select">📂 FOTOS DA OCORRÊNCIA</label>
+      <label for="fileOcorrencia" class="btn-select">📂 SELECIONAR FOTOS DA OCORRÊNCIA</label>
       <input type="file" id="fileOcorrencia" accept="image/*" multiple style="display: none;">
 
       <div class="preview-grid" id="previewOcorrencia"></div>
       <button id="btnSaveOcorrencia" class="btn-action" style="display:none;">💾 SALVAR OCORRÊNCIA</button>
     </div>
 
-    <!-- STATUS DOS REGISTROS SALVOS -->
+    <!-- PAINEL DE CONTROLE LOCAL DO DISPOSITIVO -->
     <div class="card">
       <label>REGISTROS NO DISPOSITIVO:</label>
       <div id="statusStorage" style="font-size: 0.85rem; color: #aaa; margin: 5px 0;">Carregando dados...</div>
 
       <button onclick="generateReport()" class="btn-action btn-report">📋 GERAR RELATÓRIO DO PLANTÃO</button>
-      <button onclick="clearAllData()" class="btn-action btn-danger">🗑️ LIMPAR REGISTROS DO PLANTÃO</button>
+      <button onclick="clearAllData()" class="btn-action btn-danger">🗑️ LIMPAR PLANTÃO ATUAL</button>
     </div>
   </div>
 
-  <!-- RELATÓRIO FINAL IMPRESSO -->
+  <!-- MODAL DO RELATÓRIO IMPRESSO -->
   <div class="report-modal" id="reportModal">
     <div class="report-paper">
       <div class="report-header">
         <h2>🛡️ RELATÓRIO DE PLANTÃO - GUARDIÃO</h2>
         <p><strong>Agente:</strong> <span id="repAgente"></span> | <strong>Posto:</strong> <span id="repPosto"></span></p>
-        <p><strong>Data de Emissão:</strong> <span id="repData"></span></p>
+        <p><strong>Emissão:</strong> <span id="repData"></span></p>
       </div>
 
       <div id="repContent"></div>
 
-      <button onclick="window.print()" class="btn-action" style="background:#000; margin-top:15px;">🖨️ IMPRIMIR OU SALVAR PDF</button>
+      <button onclick="window.print()" class="btn-action" style="background:#000; margin-top:15px;">🖨️ IMPRIMIR / SALVAR PDF</button>
       <button onclick="closeReport()" class="btn-action btn-danger">FECHAR</button>
     </div>
   </div>
@@ -190,6 +193,7 @@
   <canvas id="workCanvas"></canvas>
 
   <script>
+    // Inicialização do Banco IndexedDB (Salva tudo localmente no celular)
     let db;
     const request = indexedDB.open("GuardiaoDB", 1);
     request.onupgradeneeded = (e) => {
@@ -210,6 +214,7 @@
       document.getElementById('panelOcorrencia').style.display = tab === 'OCORRENCIA' ? 'block' : 'none';
     }
 
+    // Leitura e Pré-visualização de Fotos
     let rondaFiles = [];
     document.getElementById('fileRonda').addEventListener('change', (e) => {
       rondaFiles = Array.from(e.target.files);
@@ -239,7 +244,7 @@
       });
     }
 
-    // PROCESSA E SALVA A RONDA (RESTAURA O CARIMBO COMPLETO)
+    // Processar e Salvar Ronda
     document.getElementById('btnSaveRonda').addEventListener('click', async () => {
       const agente = document.getElementById('txtAgente').value.toUpperCase();
       const posto = document.getElementById('txtPosto').value.toUpperCase();
@@ -251,7 +256,7 @@
         const file = rondaFiles[i];
         const dateStr = modoData === 'AGORA' ? getNowStr() : getFileDateStr(file);
         
-        // Estampa contendo: Título, Agente, Posto, Data e Hora
+        // Aplica o carimbo completo na imagem
         const imgData = await stampImage(file, `RONDA ${numRonda} - FOTO ${i+1}`, agente, posto, dateStr);
         processedImages.push(imgData);
       }
@@ -266,24 +271,24 @@
       };
 
       saveToDB(record, () => {
-        alert(`Ronda ${numRonda} processada e salva com sucesso!`);
+        alert(`Ronda ${numRonda} processada e salva localmente!`);
         rondaFiles = [];
         document.getElementById('previewRonda').innerHTML = '';
         document.getElementById('btnSaveRonda').style.display = 'none';
         
-        // Incrementa automaticamente para a próxima ronda (Ex: Ronda 1 -> Ronda 2)
+        // Incrementa automaticamente a numeração: Ronda 1 -> Ronda 2
         document.getElementById('numRonda').value = parseInt(numRonda) + 1;
         updateStorageStatus();
       });
     });
 
-    // PROCESSA E SALVA A OCORRÊNCIA
+    // Processar e Salvar Ocorrência
     document.getElementById('btnSaveOcorrencia').addEventListener('click', async () => {
       const agente = document.getElementById('txtAgente').value.toUpperCase();
       const posto = document.getElementById('txtPosto').value.toUpperCase();
       const prioridade = document.getElementById('selectPrio').value;
-      const local = document.getElementById('txtLocalOcorrencia').value.toUpperCase() || 'LOCAL NÃO ESPECIFICADO';
-      const descricao = document.getElementById('txtDescOcorrencia').value || 'Sem descrição informada.';
+      const local = document.getElementById('txtLocalOcorrencia').value.toUpperCase() || 'GERAL';
+      const descricao = document.getElementById('txtDescOcorrencia').value || 'Sem detalhes.';
 
       const processedImages = [];
       for (let i = 0; i < ocorrenciaFiles.length; i++) {
@@ -304,7 +309,7 @@
       };
 
       saveToDB(record, () => {
-        alert("Ocorrência salva com sucesso!");
+        alert("Ocorrência registrada e salva com sucesso!");
         ocorrenciaFiles = [];
         document.getElementById('previewOcorrencia').innerHTML = '';
         document.getElementById('btnSaveOcorrencia').style.display = 'none';
@@ -313,7 +318,7 @@
       });
     });
 
-    // FUNÇÃO QUE APLICA O CARIMBO COM TODAS AS INFORMAÇÕES NA IMAGEM
+    // CARIMBO DE DADOS DA FOTO (Ronda, Agente, Posto, Data e Hora)
     function stampImage(file, titulo, agente, localStr, dataStr) {
       return new Promise((resolve) => {
         const canvas = document.getElementById('workCanvas');
@@ -329,32 +334,32 @@
           const footerH = h * 0.22;
           const footerY = h - footerH;
 
-          // Rodapé escuro com transparência
+          // Fundo do Carimbo
           ctx.fillStyle = 'rgba(13, 13, 13, 0.88)';
           ctx.fillRect(0, footerY, w, footerH);
 
-          // Borda superior amarela
+          // Tarja Amarela Superior
           ctx.fillStyle = '#eab308';
           ctx.fillRect(0, footerY, w, footerH * 0.03);
 
           const padX = w * 0.04;
 
-          // Linha 1: Título e Foto da Ronda/Ocorrência
+          // 1. Título do Registro
           ctx.fillStyle = '#eab308';
           ctx.font = `900 ${footerH * 0.26}px sans-serif`;
           ctx.fillText(titulo, padX, footerY + (footerH * 0.30));
 
-          // Linha 2: Nome do Agente
+          // 2. Agente
           ctx.fillStyle = '#ffffff';
           ctx.font = `800 ${footerH * 0.18}px sans-serif`;
           ctx.fillText(`AGENTE: ${agente}`, padX, footerY + (footerH * 0.52));
 
-          // Linha 3: Local / Posto
+          // 3. Local e Posto
           ctx.fillStyle = '#d4d4d4';
           ctx.font = `700 ${footerH * 0.16}px sans-serif`;
           ctx.fillText(`LOCAL: ${localStr}`, padX, footerY + (footerH * 0.72));
 
-          // Linha 4: Data e Hora
+          // 4. Data e Hora
           ctx.fillStyle = '#a3a3a3';
           ctx.font = `600 ${footerH * 0.15}px sans-serif`;
           ctx.fillText(`DATA/HORA: ${dataStr}`, padX, footerY + (footerH * 0.88));
@@ -380,22 +385,23 @@
         const list = req.result;
         const rondas = list.filter(r => r.tipo === 'RONDA').length;
         const ocorrencias = list.filter(r => r.tipo === 'OCORRENCIA').length;
-        document.getElementById('statusStorage').innerHTML = `📌 <strong>${rondas}</strong> Rondas registradas | ⚠️ <strong>${ocorrencias}</strong> Ocorrências salvas`;
+        document.getElementById('statusStorage').innerHTML = `📌 <strong>${rondas}</strong> Rondas salvas | ⚠️ <strong>${ocorrencias}</strong> Ocorrências salvas`;
       };
     }
 
     function clearAllData() {
-      if (confirm("Deseja apagar todos os registros do plantão atual?")) {
+      if (confirm("Deseja apagar todos os registros acumulados neste celular?")) {
         const tx = db.transaction("registros", "readwrite");
         tx.objectStore("registros").clear();
         tx.oncomplete = () => {
-          alert("Plantão limpo!");
+          alert("Plantão atual limpo!");
           document.getElementById('numRonda').value = "1";
           updateStorageStatus();
         };
       }
     }
 
+    // Geração do Relatório Unificado de Plantão
     function generateReport() {
       const tx = db.transaction("registros", "readonly");
       const store = tx.objectStore("registros");
@@ -404,7 +410,7 @@
       req.onsuccess = () => {
         const records = req.result;
         if (records.length === 0) {
-          alert("Não há registros gravados para criar o relatório.");
+          alert("Nenhum registro armazenado no momento.");
           return;
         }
 
@@ -418,7 +424,7 @@
             html += `
               <div class="report-section">
                 <h3>🔄 ${rec.titulo}</h3>
-                <p><small>Registrado em: ${rec.dataHora}</small></p>
+                <p><small>Horário do Registro: ${rec.dataHora}</small></p>
                 <div class="report-grid">
                   ${rec.imagens.map(img => `<div class="report-img-card"><img src="${img}"></div>`).join('')}
                 </div>
@@ -430,7 +436,7 @@
                 <h3>⚠️ OCORRÊNCIA - <span class="badge-prio prio-${rec.prioridade}">${rec.prioridade}</span></h3>
                 <p><strong>Local:</strong> ${rec.local}</p>
                 <p><strong>Descrição:</strong> ${rec.descricao}</p>
-                <p><small>Registrado em: ${rec.dataHora}</small></p>
+                <p><small>Horário do Registro: ${rec.dataHora}</small></p>
                 <div class="report-grid">
                   ${rec.imagens.map(img => `<div class="report-img-card"><img src="${img}"></div>`).join('')}
                 </div>
