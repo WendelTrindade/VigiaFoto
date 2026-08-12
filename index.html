@@ -88,23 +88,29 @@
     .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
     .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
 
-    /* Estilização Exclusiva de Impressão / PDF */
+    /* Estilização da Tela do Relatório (Pré-visualização Interna) */
+    .report-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
+    .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Estilização Exclusiva de Impressão / PDF Executivo */
     @media print {
       .no-print { display: none !important; }
-      body { background: #fff !important; color: #000 !important; padding: 0 !important; }
+      body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 11pt; }
       .tab-content { display: block !important; max-width: 100% !important; padding: 0 !important; }
       
-      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
-      .pdf-header h2 { font-size: 1.5rem; color: #000; margin-bottom: 4px; text-transform: uppercase; }
-      .pdf-header p { font-size: 0.85rem; color: #444; }
+      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+      .pdf-header h2 { font-size: 16pt; color: #000; margin-bottom: 4px; text-transform: uppercase; font-weight: 800; }
+      .pdf-header p { font-size: 9pt; color: #333; }
 
-      .pdf-section { margin-bottom: 24px; page-break-inside: avoid; }
-      .pdf-section-title { font-size: 1.1rem; font-weight: 800; padding: 6px 10px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 10px; display: flex; justify-content: space-between; }
+      .pdf-section { margin-bottom: 18px; page-break-inside: avoid; }
+      .pdf-section-title { font-size: 10pt; font-weight: 800; padding: 5px 8px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 8px; display: flex; justify-content: space-between; }
       .pdf-section-title.alert { border-left-color: var(--red); background: var(--red-light); color: var(--red); }
       
-      .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-      .pdf-img-card { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-      .pdf-img-card img { width: 100%; height: auto; display: block; }
+      /* Grid de Miniaturas: exatamente 3 por linha */
+      .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .pdf-img-card { border: 1px solid #ddd; border-radius: 3px; overflow: hidden; height: 110px; background: #f8fafc; }
+      .pdf-img-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
     }
   </style>
 </head>
@@ -222,9 +228,9 @@
   <!-- TAB 3: RELATÓRIO FINAL / PDF -->
   <section id="tabReport" class="tab-content">
     <div class="card no-print">
-      <div class="card-title">📄 GERAR RELATÓRIO PDF</div>
+      <div class="card-title">📄 RELATÓRIO DO PLANTÃO</div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-        Visualize como o relatório final será estruturado antes de emitir a versão de impressão/PDF.
+        Confira o resumo dos itens gravados. Clique no botão abaixo para gerar a versão limpa em PDF para impressão.
       </p>
       <button class="btn btn-gold" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
     </div>
@@ -411,14 +417,24 @@
       progressWrapper.style.display = 'block';
 
       const processedImages = [];
+      const rawImages = [];
       const timestamp = new Date();
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
+        
+        // 1. Gera Imagem com Estampa (uso do sistema)
         const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp);
+        
+        // 2. Leitura da Imagem Limpa (uso do relatório PDF)
+        const rawBase64 = await readRawImage(file);
+
+        const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
         processedImages.push({
-          id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-          data: stampedBase64
+          id: imgId,
+          data: stampedBase64,
+          raw: rawBase64
         });
 
         // Atualiza Progresso
@@ -453,6 +469,14 @@
           renderDashboardCards();
         }, 300);
       };
+    }
+
+    function readRawImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
     }
 
     function applyStampToImage(file, type, identifier, priority, dateObj) {
@@ -619,9 +643,12 @@
 
         for (let file of files) {
           const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp);
+          const rawBase64 = await readRawImage(file);
+          
           record.images.push({
             id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            data: stampedBase64
+            data: stampedBase64,
+            raw: rawBase64
           });
         }
 
@@ -685,12 +712,28 @@
         `;
 
         if (records.length === 0) {
-          html += `<p style="text-align:center; color:#666;">Nenhum evento gravado no relatório.</p>`;
+          html += `<p style="text-align:center; color:#666; padding: 20px;">Nenhum evento gravado no relatório.</p>`;
         } else {
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
+            
+            // Renderização limpa para a tela do celular (sem fotos)
             html += `
-              <div class="pdf-section">
+              <div class="report-summary-card no-print">
+                <div class="report-summary-header">
+                  <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'} ${rec.identifier}</span>
+                  <span style="color: ${isOcorrencia ? 'var(--red)' : 'var(--gold)'}">${isOcorrencia ? 'OCORRÊNCIA (' + rec.priority + ')' : 'RONDA'}</span>
+                </div>
+                <div class="report-summary-info">
+                  ${rec.observation ? `<div><strong>Obs:</strong> ${rec.observation}</div>` : ''}
+                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) anexada(s) ao PDF final.</div>
+                </div>
+              </div>
+            `;
+
+            // Renderização estruturada para impressão/PDF (3 fotos por linha em miniaturas sem estampa)
+            html += `
+              <div class="pdf-section print-only" style="display: none;">
                 <div class="pdf-section-title ${isOcorrencia ? 'alert' : ''}">
                   <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'} ${rec.identifier} ${isOcorrencia ? `- PRIORIDADE ${rec.priority}` : ''}</span>
                   <small style="font-weight:normal; font-size: 0.75rem;">${rec.timestamp}</small>
@@ -700,7 +743,7 @@
                 <div class="pdf-grid">
                   ${rec.images.map(img => `
                     <div class="pdf-img-card">
-                      <img src="${img.data}">
+                      <img src="${img.raw || img.data}">
                     </div>
                   `).join('')}
                 </div>
@@ -710,6 +753,19 @@
         }
 
         container.innerHTML = html;
+
+        // Estilo auxiliar para alternar visibilidade entre a tela e a impressão
+        const style = document.createElement('style');
+        style.innerHTML = `
+          @media screen {
+            .print-only { display: none !important; }
+          }
+          @media print {
+            .print-only { display: block !important; }
+            .report-summary-card { display: none !important; }
+          }
+        `;
+        container.appendChild(style);
       };
     }
 
