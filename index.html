@@ -3,88 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GUARDIÃO v1.1.0</title>
+  <title>GUARDIÃO v1.2.0</title>
   <style>
-    :root { --primary: #eab308; --bg: #0d0d0d; --card: #171717; --text: #fff; }
+    :root { --gold: #eab308; --red: #dc2626; --bg: #0d0d0d; --card: #171717; --text: #fff; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
     
-    .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--primary); text-align: center; }
+    .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; }
     .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; border-top: 1px solid #333; z-index: 1000; }
-    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; }
-    .nav-btn.active { color: var(--primary); }
+    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; cursor: pointer; }
+    .nav-btn.active { color: var(--gold); }
     
     .tab { display: none; padding: 15px; }
     .tab.active { display: block; }
     
     .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
     .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; margin-bottom: 10px; }
-    .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #000; margin-top: 5px; }
+    .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 5px; }
     
-    /* Checklist Admin */
-    .checkbox-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+    .section-title { font-size: 0.9rem; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+    .checkbox-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.9rem; }
     
-    /* Relatório Premium */
-    .premium-header { border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
+    /* Cores de Alerta */
+    .alert-box { border: 2px solid var(--red); background: #290808; }
     
-    @media print { 
-        .no-print { display: none; } 
-        body { background: #fff; color: #000; }
-        .tab { display: block !important; padding: 0; }
-        .card { border: none; }
-    }
+    @media print { .no-print { display: none; } body { background: #fff; color: #000; } }
   </style>
 </head>
 <body>
 
   <div class="header no-print">
     <h1>🛡️ GUARDIÃO</h1>
-    <small style="color: #666;">Versão: 1.1.0</small>
+    <small style="color: #666;">v1.2.0</small>
   </div>
 
-  <!-- ABA 1: RONDA -->
+  <!-- ABA 1: REGISTRO -->
   <div id="tab1" class="tab active">
+    <!-- RONDA -->
     <div class="card">
-      <input type="text" id="inpAgente" class="input-field" placeholder="Nome do Agente" value="CARLOS SILVA">
-      <input type="number" id="numRonda" class="input-field" placeholder="Número da Ronda" value="1" min="1" max="10">
-      
-      <label for="fileInput" class="btn" style="background:var(--primary);">📁 SELECIONAR FOTOS</label>
-      <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-      
-      <button onclick="processarRonda()" class="btn" style="background:#16a34a; color:#fff;">PROCESSAR FOTOS</button>
+      <div class="section-title">🔄 NOVA RONDA</div>
+      <input type="number" id="numRonda" class="input-field" placeholder="Número da Ronda" value="1">
+      <label for="fileRonda" class="btn" style="background:var(--gold); color:#000;">SELECIONAR FOTOS</label>
+      <input type="file" id="fileRonda" multiple accept="image/*" style="display:none">
+      <button onclick="processarRegistro('RONDA')" class="btn" style="background:#16a34a;">PROCESSAR RONDA</button>
     </div>
-    <div id="topicContainer"></div>
+
+    <!-- OCORRÊNCIA -->
+    <div class="card alert-box">
+      <div class="section-title" style="color:var(--red);">⚠️ NOVA OCORRÊNCIA</div>
+      <select id="prioOcorrencia" class="input-field">
+        <option value="BAIXA">🟢 BAIXA</option>
+        <option value="MÉDIA">🟠 MÉDIA</option>
+        <option value="ALTA">🔴 ALTA</option>
+      </select>
+      <textarea id="obsOcorrencia" class="input-field" placeholder="Observações..." rows="2"></textarea>
+      <label for="fileOcorrencia" class="btn" style="background:var(--red);">SELECIONAR FOTOS</label>
+      <input type="file" id="fileOcorrencia" multiple accept="image/*" style="display:none">
+      <button onclick="processarRegistro('OCORRENCIA')" class="btn" style="background:var(--red);">PROCESSAR OCORRÊNCIA</button>
+    </div>
   </div>
 
   <!-- ABA 2: ADMIN -->
   <div id="tab2" class="tab">
     <div class="card">
-        <h3>⚙️ CONFIGURAR ESTAMPA</h3>
-        <p><small>Selecione os itens que aparecerão nas fotos:</small></p>
+        <div class="section-title">⚙️ CONFIGURAR ESTAMPA</div>
         <div id="adminChecklist">
             <div class="checkbox-item"><label>Data</label><input type="checkbox" data-key="date" checked></div>
             <div class="checkbox-item"><label>Hora</label><input type="checkbox" data-key="time" checked></div>
             <div class="checkbox-item"><label>Número da Ronda</label><input type="checkbox" data-key="ronda" checked></div>
-            <div class="checkbox-item"><label>Nome do Agente</label><input type="checkbox" data-key="agent" checked></div>
-            <div class="checkbox-item"><label>Nome da Empresa</label><input type="checkbox" data-key="company" checked></div>
+            <div class="checkbox-item"><label>Agente</label><input type="checkbox" data-key="agent" checked></div>
+            <div class="checkbox-item"><label>Empresa</label><input type="checkbox" data-key="company" checked></div>
         </div>
-        <input type="text" id="cfgEmpresa" class="input-field" placeholder="Nome da Empresa (Para o Relatório e Estampa)">
-        <button onclick="salvarConfig()" class="btn" style="background:var(--primary);">SALVAR CONFIGURAÇÕES</button>
+        <input type="text" id="cfgEmpresa" class="input-field" placeholder="Nome da Empresa">
+        <input type="text" id="cfgCustom" class="input-field" placeholder="Texto Customizado (Local, etc)">
+        <button onclick="salvarConfig()" class="btn" style="background:var(--gold); color:#000;">SALVAR CONFIGURAÇÕES</button>
     </div>
   </div>
 
   <!-- ABA 3: RELATÓRIO -->
   <div id="tab3" class="tab">
     <div class="card">
-        <h3>📋 DADOS DO RELATÓRIO</h3>
         <input type="text" id="repCriador" class="input-field" placeholder="Nome do Criador do Relatório">
-        <button onclick="window.print()" class="btn" style="background:#2563eb; color:#fff;">GERAR RELATÓRIO PDF</button>
+        <button onclick="window.print()" class="btn" style="background:#2563eb;">GERAR PDF / IMPRIMIR</button>
     </div>
     <div id="reportContainer"></div>
   </div>
 
   <nav class="nav-bar no-print">
-    <button class="nav-btn active" onclick="showTab(1)">RONDA</button>
+    <button class="nav-btn active" onclick="showTab(1)">REGISTRO</button>
     <button class="nav-btn" onclick="showTab(2)">ADMIN</button>
     <button class="nav-btn" onclick="showTab(3)">PDF</button>
   </nav>
@@ -93,9 +99,9 @@
 
   <script>
     let db;
-    const request = indexedDB.open("GuardiaoDB", 8);
+    const request = indexedDB.open("GuardiaoDB", 9);
     request.onupgradeneeded = e => e.target.result.createObjectStore("regs", { autoIncrement: true });
-    request.onsuccess = e => { db = e.target.result; loadData(); loadConfig(); };
+    request.onsuccess = e => { db = e.target.result; loadConfig(); };
 
     function showTab(n) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -108,7 +114,8 @@
     function salvarConfig() {
         const config = {
             items: {},
-            company: document.getElementById('cfgEmpresa').value
+            company: document.getElementById('cfgEmpresa').value,
+            custom: document.getElementById('cfgCustom').value
         };
         document.querySelectorAll('#adminChecklist input').forEach(i => config.items[i.dataset.key] = i.checked);
         localStorage.setItem('guardiao_config', JSON.stringify(config));
@@ -116,32 +123,33 @@
     }
 
     function loadConfig() {
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{date:true, time:true, ronda:true, agent:true, company:true}, company: ''};
+        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{date:true, time:true, ronda:true, agent:true, company:true}, company: '', custom:''};
         document.querySelectorAll('#adminChecklist input').forEach(i => i.checked = cfg.items[i.dataset.key]);
         document.getElementById('cfgEmpresa').value = cfg.company || '';
+        document.getElementById('cfgCustom').value = cfg.custom || '';
     }
 
-    async function processarRonda() {
-        const files = document.getElementById('fileInput').files;
-        const num = document.getElementById('numRonda').value;
-        const agent = document.getElementById('inpAgente').value;
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{date:true, time:true, ronda:true, agent:true, company:true}, company: ''};
+    async function processarRegistro(type) {
+        const fileInput = type === 'RONDA' ? document.getElementById('fileRonda') : document.getElementById('fileOcorrencia');
+        const files = fileInput.files;
+        if(files.length === 0) return alert("Selecione fotos.");
+        
+        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{}, company:'', custom:''};
+        const meta = type === 'RONDA' ? { num: document.getElementById('numRonda').value } : { prio: document.getElementById('prioOcorrencia').value, obs: document.getElementById('obsOcorrencia').value };
         
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const dateStr = now.toLocaleDateString();
-
+        
         let processed = [];
         for(let file of files) {
-            processed.push(await draw(file, num, agent, timeStr, dateStr, cfg));
+            processed.push(await draw(file, type, meta, timeStr, cfg));
         }
 
-        db.transaction("regs", "readwrite").objectStore("regs").add({ num, agent, time: timeStr, images: processed });
-        alert("Ronda processada!");
-        loadData();
+        db.transaction("regs", "readwrite").objectStore("regs").add({ type, meta, time: timeStr, images: processed });
+        alert("Processado com sucesso!");
     }
 
-    function draw(file, num, agent, time, date, cfg) {
+    function draw(file, type, meta, time, cfg) {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => {
@@ -151,19 +159,21 @@
                 ctx.drawImage(img, 0, 0);
                 
                 const h = img.height * 0.25;
-                ctx.fillStyle = 'rgba(0,0,0,0.85)';
+                ctx.fillStyle = type === 'OCORRENCIA' ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0,0,0,0.85)';
                 ctx.fillRect(0, img.height-h, img.width, h);
-                ctx.fillStyle = '#eab308';
+                ctx.fillStyle = '#fff';
                 ctx.font = `bold ${h*0.25}px sans-serif`;
                 
                 let line1 = [];
-                if(cfg.items.ronda) line1.push(`RONDA ${num}`);
+                if(cfg.items.ronda && meta.num) line1.push(`RONDA ${meta.num}`);
+                if(type === 'OCORRENCIA') line1.push(`ALERTA: ${meta.prio}`);
                 if(cfg.items.company && cfg.company) line1.push(cfg.company);
                 
                 let line2 = [];
-                if(cfg.items.agent) line2.push(`AGENTE: ${agent}`);
-                if(cfg.items.date) line2.push(date);
+                if(cfg.items.agent) line2.push(`AGENTE: ${document.getElementById('inpAgente')?.value || ''}`);
+                if(cfg.items.date) line2.push(new Date().toLocaleDateString());
                 if(cfg.items.time) line2.push(time);
+                if(cfg.custom) line2.push(cfg.custom);
                 
                 ctx.fillText(line1.join(' | '), 40, img.height - h*0.6);
                 ctx.fillText(line2.join(' | '), 40, img.height - h*0.25);
@@ -176,28 +186,27 @@
 
     function renderReport() {
         const cont = document.getElementById('reportContainer');
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {company: 'EMPRESA NÃO CONFIGURADA'};
-        const criador = document.getElementById('repCriador').value || "Não informado";
-        const now = new Date();
-        
+        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {company: 'EMPRESA'};
         cont.innerHTML = `
-            <div class="premium-header">
+            <div style="border-bottom:2px solid #000; margin-bottom:20px;">
                 <h1>${cfg.company.toUpperCase()}</h1>
-                <p><strong>Relatório de Plantão</strong></p>
-                <p>Criador: ${criador} | Data: ${now.toLocaleDateString()} | Fechamento: ${now.toLocaleTimeString()}</p>
+                <p>Relatório: ${document.getElementById('repCriador').value || 'N/A'} | Data: ${new Date().toLocaleDateString()}</p>
             </div>
         `;
         
         db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
             e.target.result.forEach(r => {
-                cont.innerHTML += `<h3>RONDA ${r.num} - ${r.time}</h3>
-                                  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:15px;">
-                                  ${r.images.map(i=>`<img src="${i}" style="width:100%; border:1px solid #ccc;">`).join('')}</div>`;
+                const isAlert = r.type === 'OCORRENCIA';
+                cont.innerHTML += `
+                    <div style="border: 2px solid ${isAlert?'red':'#ccc'}; padding:10px; margin-bottom:20px;">
+                        <h3 style="color:${isAlert?'red':'inherit'}">${r.type} ${r.type==='RONDA' ? r.meta.num : '- Prioridade: ' + r.meta.prio}</h3>
+                        ${isAlert ? '<p>Obs: ' + r.meta.obs + '</p>' : ''}
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:10px;">
+                        ${r.images.map(i=>`<img src="${i}" style="width:100%;">`).join('')}</div>
+                    </div>`;
             });
         };
     }
-    
-    function loadData() { /* Opcional para mostrar na aba 1 */ }
   </script>
 </body>
 </html>
