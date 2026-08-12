@@ -2,157 +2,724 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>GUARDIÃO - Sistema Fixo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GUARDIÃO PRO</title>
   <style>
-    :root { --gold: #eab308; --red: #dc2626; --bg: #121212; --card: #1e1e1e; --text: #fff; }
-    body { background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 80px; }
-    .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; }
-    
-    /* Abas */
-    .tab { display: none; padding: 15px; }
-    .tab.active { display: block; }
-    .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #000; border-top: 1px solid #333; }
-    .nav-btn { flex: 1; padding: 15px; background: none; border: none; color: #fff; font-weight: bold; }
-    .nav-btn.active { color: var(--gold); border-top: 2px solid var(--gold); }
+    :root {
+      --gold: #d97706;
+      --gold-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --orange: #ea580c;
+      --green: #16a34a;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-card: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #475569;
+    }
 
-    /* Cards */
-    .card { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    .btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
-    .thumb { aspect-ratio: 1; background: #333; overflow: hidden; }
-    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+    /* Header */
+    .app-header { background: var(--surface); padding: 16px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .app-header h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: 1px; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .app-header small { color: var(--gold); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+
+    /* Navegação */
+    .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--surface); display: flex; border-top: 1px solid var(--border); z-index: 100; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.3); }
+    .nav-btn { flex: 1; padding: 12px 8px; border: none; background: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+    .nav-btn.active { color: var(--gold); border-top: 3px solid var(--gold); background: rgba(217, 119, 6, 0.05); }
+
+    /* Abas */
+    .tab-content { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* Formulários e UI Controls */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--gold); display: flex; align-items: center; justify-content: space-between; }
     
-    @media print { .no-print { display: none; } body { background: #fff; color: #000; } }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .input-control { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; font-size: 0.95rem; outline: none; }
+    .input-control:focus { border-color: var(--gold); }
+    
+    .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-gold { background: var(--gold); color: #000; }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-sm { padding: 8px 12px; font-size: 0.75rem; width: auto; }
+
+    /* Barra de Progresso */
+    .progress-wrapper { display: none; margin-top: 12px; }
+    .progress-bar-bg { width: 100%; height: 10px; background: #0f172a; border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
+    .progress-bar-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.2s ease; }
+    .progress-text { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px; font-weight: 600; }
+
+    /* Lista de Cards Sanfona (Rondas / Ocorrências) */
+    .record-card { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; }
+    .record-card.ocorrencia { border-left: 5px solid var(--red); }
+    .record-card.ronda { border-left: 5px solid var(--gold); }
+    
+    .record-header { padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+    .record-header-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    .badge-alta { background: var(--red); color: #fff; }
+    .badge-media { background: var(--orange); color: #fff; }
+    .badge-baixa { background: var(--green); color: #fff; }
+    .badge-ronda { background: var(--gold); color: #000; }
+
+    .record-body { display: none; padding: 14px; border-top: 1px solid var(--border); background: #0f172a; }
+    .record-body.expanded { display: block; }
+    
+    .record-obs { font-size: 0.85rem; color: var(--text-muted); background: var(--surface); padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid var(--border); }
+
+    /* Grid de Imagens dentro do Card */
+    .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .image-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: #000; }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; }
+    .btn-delete-img { position: absolute; top: 4px; right: 4px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+
+    /* Admin Checklist Dynamic */
+    .field-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #0f172a; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .field-row label { font-size: 0.85rem; font-weight: 600; cursor: pointer; flex: 1; }
+    .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+    .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
+
+    /* Estilização Exclusiva de Impressão / PDF */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff !important; color: #000 !important; padding: 0 !important; }
+      .tab-content { display: block !important; max-width: 100% !important; padding: 0 !important; }
+      
+      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
+      .pdf-header h2 { font-size: 1.5rem; color: #000; margin-bottom: 4px; text-transform: uppercase; }
+      .pdf-header p { font-size: 0.85rem; color: #444; }
+
+      .pdf-section { margin-bottom: 24px; page-break-inside: avoid; }
+      .pdf-section-title { font-size: 1.1rem; font-weight: 800; padding: 6px 10px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 10px; display: flex; justify-content: space-between; }
+      .pdf-section-title.alert { border-left-color: var(--red); background: var(--red-light); color: var(--red); }
+      
+      .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .pdf-img-card { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+      .pdf-img-card img { width: 100%; height: auto; display: block; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="header"><h1>🛡️ GUARDIÃO</h1></div>
+  <!-- App Header -->
+  <header class="app-header no-print">
+    <h1>🛡️ GUARDIÃO PRO</h1>
+    <small id="headerCompanyDisplay">SISTEMA DE CONTROLE DE PLANTÃO</small>
+  </header>
 
-  <!-- ABA 1: DASHBOARD (Cards) -->
-  <div id="tab1" class="tab active">
-    <h3>Seus Registros</h3>
-    <div id="dashboardContainer"></div>
-  </div>
-
-  <!-- ABA 2: NOVO REGISTRO -->
-  <div id="tab2" class="tab">
-    <div class="card">
-        <select id="regType" class="card" style="width:100%" onchange="toggleType()">
-            <option value="RONDA">🔄 RONDA</option>
-            <option value="OCORRENCIA">⚠️ OCORRÊNCIA</option>
+  <!-- TAB 1: PAINEL DE REGISTROS (DASHBOARD) -->
+  <main id="tabDashboard" class="tab-content active">
+    <div class="card no-print">
+      <div class="card-title">
+        <span>➕ REGISTRAR EVENTO</span>
+      </div>
+      
+      <div class="form-group">
+        <label>Tipo de Evento</label>
+        <select id="regType" class="input-control" onchange="toggleFormMode()">
+          <option value="RONDA">🔄 Ronda Operacional</option>
+          <option value="OCORRENCIA">⚠️ Ocorrência / Alerta</option>
         </select>
-        <input type="text" id="inpID" class="card" style="width:100%; border:none; background:#333; color:#fff" placeholder="Ex: Ronda 1 ou Ocorrencia 01">
-        <div id="divOcorrencia" style="display:none">
-            <select id="inpPrio" class="card" style="width:100%"><option>ALTA</option><option>MÉDIA</option><option>BAIXA</option></select>
-            <textarea id="inpObs" class="card" style="width:100%" placeholder="Observações da Ocorrência"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label id="lblIdentifier">Identificador da Ronda</label>
+        <input type="text" id="inpIdentifier" class="input-control" placeholder="Ex: Ronda 01, Bloco A, Portaria...">
+      </div>
+
+      <!-- Campos Exclusivos para Ocorrência -->
+      <div id="wrapperOcorrencia" style="display: none;">
+        <div class="form-group">
+          <label>Nível de Prioridade</label>
+          <select id="inpPriority" class="input-control">
+            <option value="BAIXA">🟢 Baixa Prioridade</option>
+            <option value="MEDIA">🟠 Média Prioridade</option>
+            <option value="ALTA">🔴 Alta Prioridade (Alerta Crítico)</option>
+          </select>
         </div>
-        <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-        <button class="btn" style="background:var(--gold)" onclick="document.getElementById('fileInput').click()">SELECIONAR FOTOS</button>
-        <button class="btn" style="background:#28a745; color:#fff" onclick="salvarRegistro()">PROCESSAR E SALVAR</button>
-    </div>
-  </div>
 
-  <!-- ABA 3: ADMIN & PDF -->
-  <div id="tab3" class="tab">
+        <div class="form-group">
+          <label>Observação / Detalhes da Ocorrência</label>
+          <textarea id="inpObservation" class="input-control" rows="3" placeholder="Descreva os detalhes da ocorrência aplicáveis a este grupo de fotos..."></textarea>
+        </div>
+      </div>
+
+      <!-- Seleção de Arquivos -->
+      <div class="form-group">
+        <label>Fotos da Galeria / Câmera</label>
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
+          📷 Selecionar Imagens
+        </button>
+        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelection(event)">
+        <span id="fileCountBadge" style="font-size: 0.75rem; color: var(--gold); display: block; margin-top: 6px; font-weight: 600;"></span>
+      </div>
+
+      <!-- Progresso de Carregamento -->
+      <div id="progressWrapper" class="progress-wrapper">
+        <div class="progress-bar-bg">
+          <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+        <div id="progressText" class="progress-text">Processando imagens 0%</div>
+      </div>
+
+      <button type="button" class="btn btn-gold" style="margin-top: 12px;" onclick="processAndSaveGroup()">
+        💾 Processar e Criar Card
+      </button>
+    </div>
+
+    <!-- Lista de Cards Expandíveis -->
+    <div class="no-print" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted);">REGISTROS DO PLANTÃO</h3>
+      <button class="btn btn-outline btn-sm" onclick="clearAllData()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <div id="recordsContainer">
+      <!-- Cards serão injetados dinamicamente aqui -->
+    </div>
+  </main>
+
+  <!-- TAB 2: PAINEL ADMINISTRATIVO -->
+  <section id="tabAdmin" class="tab-content">
     <div class="card">
-        <h3>⚙️ CONFIGURAR ESTAMPA</h3>
-        <div id="adminFields"></div>
-        <input type="text" id="newField" placeholder="Novo campo (ex: Local)" class="card" style="width:100%; border:none">
-        <button class="btn" onclick="addField()">+ ADICIONAR CAMPO</button>
-        <button class="btn" style="background:var(--gold)" onclick="saveConfig()">SALVAR CONFIG</button>
-    </div>
-    <div class="card">
-        <button class="btn" style="background:#007bff; color:#fff" onclick="window.print()">GERAR RELATÓRIO PDF</button>
-    </div>
-  </div>
+      <div class="card-title">⚙️ CONFIGURAÇÃO DA ESTAMPA</div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+        Marque os itens ativos ou crie novos campos personalizados para aparecer no carimbo das fotos.
+      </p>
 
-  <div class="nav">
-    <button class="nav-btn active" onclick="showTab(1)">DASHBOARD</button>
-    <button class="nav-btn" onclick="showTab(2)">NOVO</button>
-    <button class="nav-btn" onclick="showTab(3)">CONFIG</button>
-  </div>
+      <div class="form-group">
+        <label>Nome da Empresa / Posto</label>
+        <input type="text" id="cfgCompany" class="input-control" placeholder="Ex: Segurança Patrimonial Silva" onchange="saveCompanyConfig()">
+      </div>
 
-  <canvas id="canvas" style="display:none"></canvas>
+      <div class="form-group">
+        <label>Nome do Agente / Vigilante</label>
+        <input type="text" id="cfgAgent" class="input-control" placeholder="Ex: Agente Carlos" onchange="saveAgentConfig()">
+      </div>
+
+      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block;">
+        Campos do Carimbo (Checklist)
+      </label>
+      <div id="dynamicFieldsContainer">
+        <!-- Checkboxes dinâmicos gerados via JS -->
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <input type="text" id="newFieldName" class="input-control" placeholder="Novo campo (ex: Setor, Viatura...)" style="margin-bottom: 0;">
+        <button class="btn btn-gold btn-sm" onclick="addNewField()" style="width: auto; white-space: nowrap;">+ Adicionar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: RELATÓRIO FINAL / PDF -->
+  <section id="tabReport" class="tab-content">
+    <div class="card no-print">
+      <div class="card-title">📄 GERAR RELATÓRIO PDF</div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+        Visualize como o relatório final será estruturado antes de emitir a versão de impressão/PDF.
+      </p>
+      <button class="btn btn-gold" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+
+    <!-- ÁREA COMPATÍVEL COM IMPRESSÃO/PDF -->
+    <div id="pdfRenderArea">
+      <!-- Layout gerado dinamicamente -->
+    </div>
+  </section>
+
+  <!-- Navegação Inferior -->
+  <nav class="nav-bar no-print">
+    <button class="nav-btn active" onclick="switchTab('tabDashboard', this)">
+      <span>📱</span>
+      <span>Registros</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tabAdmin', this)">
+      <span>⚙️</span>
+      <span>Painel Admin</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tabReport', this)">
+      <span>📄</span>
+      <span>Relatório</span>
+    </button>
+  </nav>
+
+  <!-- Canvas Oculto para Estampa -->
+  <canvas id="stampCanvas" style="display: none;"></canvas>
 
   <script>
-    let db, config = JSON.parse(localStorage.getItem('g_cfg')) || {fields: ['Data', 'Hora', 'Agente']};
+    /* ==========================================================================
+       ESTADO GLOBAL & BANCO DE DADOS LOCAL (IndexedDB)
+       ========================================================================== */
+    let db = null;
+    let selectedFiles = [];
     
-    // DB Init
-    const req = indexedDB.open("GuardiaoDB", 11);
-    req.onupgradeneeded = e => e.target.result.createObjectStore("regs", { keyPath: "id" });
-    req.onsuccess = e => { db = e.target.result; renderDashboard(); renderAdmin(); };
+    // Configurações Padrão
+    let config = JSON.parse(localStorage.getItem('guardiao_cfg_v2')) || {
+      company: 'SEGURANÇA PATRIMONIAL',
+      agent: 'VIGILANTE',
+      fields: [
+        { id: 'date', label: 'Data', active: true },
+        { id: 'time', label: 'Hora', active: true },
+        { id: 'identifier', label: 'Ronda / Evento', active: true },
+        { id: 'agent', label: 'Agente', active: true },
+        { id: 'company', label: 'Empresa', active: true }
+      ]
+    };
 
-    function showTab(n) {
-        document.querySelectorAll('.tab').forEach((t, i) => t.className = (i+1==n ? 'tab active' : 'tab'));
-        document.querySelectorAll('.nav-btn').forEach((b, i) => b.className = (i+1==n ? 'nav-btn active' : 'nav-btn'));
+    // Inicialização do IndexedDB para Suportar Grandes Volumes de Fotos
+    function initDB() {
+      const request = indexedDB.open("GuardiaoProDB", 2);
+      request.onupgradeneeded = (e) => {
+        const database = e.target.result;
+        if (!database.objectStoreNames.contains("records")) {
+          database.createObjectStore("records", { keyPath: "id" });
+        }
+      };
+      request.onsuccess = (e) => {
+        db = e.target.result;
+        renderDashboardCards();
+        renderAdminFields();
+        document.getElementById('cfgCompany').value = config.company;
+        document.getElementById('cfgAgent').value = config.agent;
+        document.getElementById('headerCompanyDisplay').innerText = config.company || 'SISTEMA DE CONTROLE DE PLANTÃO';
+      };
+      request.onerror = () => alert("Erro ao abrir banco de dados local.");
     }
 
-    function toggleType() {
-        document.getElementById('divOcorrencia').style.display = (document.getElementById('regType').value === 'OCORRENCIA' ? 'block' : 'none');
+    /* ==========================================================================
+       NAVEGAÇÃO DE ABAS
+       ========================================================================== */
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      if(btnElement) btnElement.classList.add('active');
+
+      if (tabId === 'tabReport') {
+        renderPdfReport();
+      }
     }
 
-    // ADMIN
-    function renderAdmin() {
-        const div = document.getElementById('adminFields');
-        div.innerHTML = config.fields.map((f, i) => `<div class="card">${f} <button onclick="config.fields.splice(${i},1);renderAdmin()">X</button></div>`).join('');
+    function toggleFormMode() {
+      const type = document.getElementById('regType').value;
+      const wrapper = document.getElementById('wrapperOcorrencia');
+      const label = document.getElementById('lblIdentifier');
+      
+      if (type === 'OCORRENCIA') {
+        wrapper.style.display = 'block';
+        label.innerText = 'Identificador da Ocorrência';
+      } else {
+        wrapper.style.display = 'none';
+        label.innerText = 'Identificador da Ronda';
+      }
     }
-    function addField() {
-        config.fields.push(document.getElementById('newField').value);
-        renderAdmin();
+
+    /* ==========================================================================
+       PAINEL ADMINISTRATIVO DINÂMICO
+       ========================================================================== */
+    function renderAdminFields() {
+      const container = document.getElementById('dynamicFieldsContainer');
+      container.innerHTML = '';
+
+      config.fields.forEach((field, index) => {
+        const row = document.createElement('div');
+        row.className = 'field-row';
+        row.innerHTML = `
+          <label for="chk_${index}">${field.label}</label>
+          <input type="checkbox" id="chk_${index}" ${field.active ? 'checked' : ''} onchange="toggleFieldActive(${index}, this.checked)">
+          ${index > 4 ? `<button class="btn-remove-field" onclick="removeCustomField(${index})">✕</button>` : ''}
+        `;
+        container.appendChild(row);
+      });
     }
-    function saveConfig() { localStorage.setItem('g_cfg', JSON.stringify(config)); alert("Salvo!"); }
 
-    // DADOS
-    async function salvarRegistro() {
-        const type = document.getElementById('regType').value;
-        const id = document.getElementById('inpID').value;
-        const files = document.getElementById('fileInput').files;
-        let images = [];
+    function toggleFieldActive(index, isChecked) {
+      config.fields[index].active = isChecked;
+      saveConfigState();
+    }
 
-        for(let file of files) {
-            images.push(await draw(file, type, id));
+    function addNewField() {
+      const input = document.getElementById('newFieldName');
+      const val = input.value.trim();
+      if (!val) return;
+
+      config.fields.push({
+        id: 'custom_' + Date.now(),
+        label: val,
+        active: true
+      });
+
+      input.value = '';
+      saveConfigState();
+      renderAdminFields();
+    }
+
+    function removeCustomField(index) {
+      config.fields.splice(index, 1);
+      saveConfigState();
+      renderAdminFields();
+    }
+
+    function saveCompanyConfig() {
+      config.company = document.getElementById('cfgCompany').value;
+      document.getElementById('headerCompanyDisplay').innerText = config.company || 'SISTEMA DE CONTROLE DE PLANTÃO';
+      saveConfigState();
+    }
+
+    function saveAgentConfig() {
+      config.agent = document.getElementById('cfgAgent').value;
+      saveConfigState();
+    }
+
+    function saveConfigState() {
+      localStorage.setItem('guardiao_cfg_v2', JSON.stringify(config));
+    }
+
+    /* ==========================================================================
+       PROCESSAMENTO DE FOTOS COM ESTAMPA E BARRA DE PROGRESSO
+       ========================================================================== */
+    function handleFileSelection(event) {
+      selectedFiles = Array.from(event.target.files);
+      const badge = document.getElementById('fileCountBadge');
+      badge.innerText = selectedFiles.length > 0 ? `${selectedFiles.length} foto(s) selecionada(s)` : '';
+    }
+
+    async function processAndSaveGroup() {
+      const type = document.getElementById('regType').value;
+      const identifier = document.getElementById('inpIdentifier').value.trim() || (type === 'RONDA' ? 'Ronda Genérica' : 'Ocorrência sem Título');
+      const priority = document.getElementById('inpPriority').value;
+      const obs = document.getElementById('inpObservation').value.trim();
+
+      if (selectedFiles.length === 0) {
+        alert("Por favor, selecione ao menos uma foto.");
+        return;
+      }
+
+      // Exibe Barra de Progresso
+      const progressWrapper = document.getElementById('progressWrapper');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const progressText = document.getElementById('progressText');
+      progressWrapper.style.display = 'block';
+
+      const processedImages = [];
+      const timestamp = new Date();
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp);
+        processedImages.push({
+          id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          data: stampedBase64
+        });
+
+        // Atualiza Progresso
+        const percent = Math.round(((i + 1) / selectedFiles.length) * 100);
+        progressBarFill.style.width = percent + '%';
+        progressText.innerText = `Processando imagens ${percent}% (${i + 1}/${selectedFiles.length})`;
+      }
+
+      // Salva no IndexedDB
+      const record = {
+        id: 'rec_' + Date.now(),
+        type: type,
+        identifier: identifier,
+        priority: priority,
+        observation: obs,
+        timestamp: timestamp.toLocaleString(),
+        images: processedImages
+      };
+
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").add(record);
+      tx.oncomplete = () => {
+        // Reseta Formulário e Progresso
+        setTimeout(() => {
+          progressWrapper.style.display = 'none';
+          progressBarFill.style.width = '0%';
+          document.getElementById('fileInput').value = '';
+          document.getElementById('inpIdentifier').value = '';
+          document.getElementById('inpObservation').value = '';
+          document.getElementById('fileCountBadge').innerText = '';
+          selectedFiles = [];
+          renderDashboardCards();
+        }, 300);
+      };
+    }
+
+    function applyStampToImage(file, type, identifier, priority, dateObj) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.getElementById('stampCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            // Altura do Rodapé da Estampa (Proporcional)
+            const bannerHeight = Math.max(120, img.height * 0.22);
+            
+            // Cor de fundo: Vermelho escuro para ocorrências, preto/escuro para rondas
+            ctx.fillStyle = (type === 'OCORRENCIA') ? 'rgba(185, 28, 28, 0.90)' : 'rgba(15, 23, 42, 0.90)';
+            ctx.fillRect(0, img.height - bannerHeight, img.width, bannerHeight);
+
+            // Borda do Alerta
+            if (type === 'OCORRENCIA') {
+              ctx.fillStyle = '#dc2626';
+              ctx.fillRect(0, img.height - bannerHeight, img.width, 10);
+            }
+
+            // Construção das linhas de texto dinâmicas
+            ctx.fillStyle = '#ffffff';
+            const fontSize = Math.max(16, bannerHeight * 0.16);
+            ctx.font = `bold ${fontSize}px sans-serif`;
+
+            let line1 = [];
+            let line2 = [];
+
+            config.fields.forEach(f => {
+              if (!f.active) return;
+              if (f.id === 'date') line1.push(dateObj.toLocaleDateString());
+              else if (f.id === 'time') line1.push(dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+              else if (f.id === 'identifier') line1.push(identifier.toUpperCase());
+              else if (f.id === 'agent' && config.agent) line2.push(`AGT: ${config.agent}`);
+              else if (f.id === 'company' && config.company) line2.push(config.company);
+              else line2.push(`${f.label.toUpperCase()}`);
+            });
+
+            if (type === 'OCORRENCIA') {
+              line1.unshift(`[ALERTA ${priority}]`);
+            }
+
+            const paddingLeft = 30;
+            ctx.fillText(line1.join(' | '), paddingLeft, img.height - (bannerHeight * 0.55));
+            
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = `${fontSize * 0.85}px sans-serif`;
+            ctx.fillText(line2.join(' | '), paddingLeft, img.height - (bannerHeight * 0.22));
+
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* ==========================================================================
+       RENDERIZAÇÃO DOS CARDS SANFONA (DASHBOARD)
+       ========================================================================== */
+    function renderDashboardCards() {
+      const container = document.getElementById('recordsContainer');
+      container.innerHTML = '';
+
+      const tx = db.transaction("records", "readonly");
+      const store = tx.objectStore("records");
+      store.getAll().onsuccess = (e) => {
+        const records = e.target.result;
+
+        if (records.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 30px; font-size: 0.85rem;">
+              Nenhum registro adicionado ao plantão ainda.
+            </div>`;
+          return;
         }
 
-        const data = { id, type, images, meta: { prio: document.getElementById('inpPrio').value, obs: document.getElementById('inpObs').value } };
-        db.transaction("regs", "readwrite").objectStore("regs").put(data);
-        alert("Salvo!");
-        renderDashboard();
-    }
+        records.forEach((rec) => {
+          const card = document.createElement('div');
+          card.className = `record-card ${rec.type.toLowerCase()}`;
+          
+          let badgeHtml = rec.type === 'RONDA' 
+            ? `<span class="badge badge-ronda">RONDA</span>`
+            : `<span class="badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>`;
 
-    function draw(file, type, id) {
-        return new Promise(res => {
-            const img = new Image();
-            img.onload = () => {
-                const c = document.getElementById('canvas');
-                const ctx = c.getContext('2d');
-                c.width = img.width; c.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                ctx.fillStyle = type === 'OCORRENCIA' ? 'red' : 'black';
-                ctx.fillRect(0, img.height-200, img.width, 200);
-                ctx.fillStyle = 'white';
-                ctx.font = '50px sans-serif';
-                ctx.fillText(id + " | " + config.fields.join(' | '), 50, img.height-100);
-                res(c.toDataURL());
-            };
-            img.src = URL.createObjectURL(file);
+          card.innerHTML = `
+            <div class="record-header" onclick="toggleCardExpansion('${rec.id}')">
+              <div class="record-header-title">
+                <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'}</span>
+                <span>${rec.identifier}</span>
+                ${badgeHtml}
+              </div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;" id="icon_exp_${rec.id}">▼ (${rec.images.length})</span>
+            </div>
+
+            <div id="body_${rec.id}" class="record-body">
+              ${rec.observation ? `<div class="record-obs"><strong>Obs:</strong> ${rec.observation}</div>` : ''}
+              
+              <div class="image-grid" id="grid_${rec.id}">
+                ${rec.images.map(img => `
+                  <div class="image-item">
+                    <img src="${img.data}" onclick="openImageModal('${img.data}')">
+                    <button class="btn-delete-img" onclick="deleteImageFromRecord('${rec.id}', '${img.id}')">✕</button>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Ações do Card: Adicionar Mais Fotos ou Excluir Card -->
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="triggerAddMorePhotos('${rec.id}')">
+                  📷 Adicionar Fotos
+                </button>
+                <button class="btn btn-outline btn-sm" style="color: var(--red); border-color: var(--red);" onclick="deleteRecordGroup('${rec.id}')">
+                  🗑️ Excluir Card
+                </button>
+              </div>
+              <input type="file" id="append_file_${rec.id}" multiple accept="image/*" style="display: none;" onchange="appendPhotosToRecord(event, '${rec.id}')">
+            </div>
+          `;
+          container.appendChild(card);
         });
+      };
     }
 
-    function renderDashboard() {
-        const cont = document.getElementById('dashboardContainer');
-        cont.innerHTML = '';
-        db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
-            e.target.result.forEach(r => {
-                cont.innerHTML += `
-                    <div class="card" onclick="this.lastElementChild.style.display=(this.lastElementChild.style.display==='none'?'grid':'none')">
-                        <h3>${r.type}: ${r.id} ${r.type==='OCORRENCIA'?'('+r.meta.prio+')':''}</h3>
-                        <p>${r.meta.obs || ''}</p>
-                        <div class="grid" style="display:none">${r.images.map(i => `<div class="thumb"><img src="${i}"></div>`).join('')}</div>
-                    </div>`;
-            });
-        };
+    function toggleCardExpansion(recordId) {
+      const body = document.getElementById(`body_${recordId}`);
+      const icon = document.getElementById(`icon_exp_${recordId}`);
+      const isExpanded = body.classList.contains('expanded');
+      
+      if (isExpanded) {
+        body.classList.remove('expanded');
+        icon.innerText = icon.innerText.replace('▲', '▼');
+      } else {
+        body.classList.add('expanded');
+        icon.innerText = icon.innerText.replace('▼', '▲');
+      }
     }
+
+    /* ==========================================================================
+       GESTÃO DINÂMICA DE FOTOS E CARDS
+       ========================================================================== */
+    function triggerAddMorePhotos(recordId) {
+      document.getElementById(`append_file_${recordId}`).click();
+    }
+
+    async function appendPhotosToRecord(event, recordId) {
+      const files = Array.from(event.target.files);
+      if (files.length === 0) return;
+
+      const tx = db.transaction("records", "readwrite");
+      const store = tx.objectStore("records");
+
+      store.get(recordId).onsuccess = async (e) => {
+        const record = e.target.result;
+        const timestamp = new Date();
+
+        for (let file of files) {
+          const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp);
+          record.images.push({
+            id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            data: stampedBase64
+          });
+        }
+
+        store.put(record);
+        tx.oncomplete = () => {
+          renderDashboardCards();
+        };
+      };
+    }
+
+    function deleteImageFromRecord(recordId, imageId) {
+      if (!confirm("Deseja remover esta foto do card?")) return;
+
+      const tx = db.transaction("records", "readwrite");
+      const store = tx.objectStore("records");
+
+      store.get(recordId).onsuccess = (e) => {
+        const record = e.target.result;
+        record.images = record.images.filter(img => img.id !== imageId);
+
+        if (record.images.length === 0) {
+          store.delete(recordId);
+        } else {
+          store.put(record);
+        }
+
+        tx.oncomplete = () => renderDashboardCards();
+      };
+    }
+
+    function deleteRecordGroup(recordId) {
+      if (!confirm("Deseja remover todo este card e suas fotos?")) return;
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").delete(recordId);
+      tx.oncomplete = () => renderDashboardCards();
+    }
+
+    function clearAllData() {
+      if (!confirm("ATENÇÃO: Deseja apagar TODOS os registros do plantão atual?")) return;
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").clear();
+      tx.oncomplete = () => renderDashboardCards();
+    }
+
+    /* ==========================================================================
+       RELATÓRIO PDF PREMIUM (LAYOUT E IMPRESSÃO)
+       ========================================================================== */
+    function renderPdfReport() {
+      const container = document.getElementById('pdfRenderArea');
+      container.innerHTML = '';
+
+      const tx = db.transaction("records", "readonly");
+      tx.objectStore("records").getAll().onsuccess = (e) => {
+        const records = e.target.result;
+
+        let html = `
+          <div class="pdf-header">
+            <h2>${config.company || 'RELATÓRIO PATRIMONIAL'}</h2>
+            <p><strong>Agente:</strong> ${config.agent || 'N/A'} | <strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+          </div>
+        `;
+
+        if (records.length === 0) {
+          html += `<p style="text-align:center; color:#666;">Nenhum evento gravado no relatório.</p>`;
+        } else {
+          records.forEach((rec) => {
+            const isOcorrencia = rec.type === 'OCORRENCIA';
+            html += `
+              <div class="pdf-section">
+                <div class="pdf-section-title ${isOcorrencia ? 'alert' : ''}">
+                  <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'} ${rec.identifier} ${isOcorrencia ? `- PRIORIDADE ${rec.priority}` : ''}</span>
+                  <small style="font-weight:normal; font-size: 0.75rem;">${rec.timestamp}</small>
+                </div>
+                ${rec.observation ? `<p style="font-size:0.85rem; margin-bottom:8px; color:#333;"><strong>Observações:</strong> ${rec.observation}</p>` : ''}
+                
+                <div class="pdf-grid">
+                  ${rec.images.map(img => `
+                    <div class="pdf-img-card">
+                      <img src="${img.data}">
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        container.innerHTML = html;
+      };
+    }
+
+    function openImageModal(src) {
+      const w = window.open("");
+      w.document.write(`<img src="${src}" style="width:100%; height:auto;">`);
+    }
+
+    // Inicializa o App
+    window.onload = initDB;
   </script>
 </body>
 </html>
