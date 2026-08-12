@@ -6,11 +6,11 @@
   <title>GUARDIÃO PRO</title>
   <style>
     :root {
-      --gold: #d97706;
-      --gold-light: #fef3c7;
+      --gold: #d4af37; /* Dourado Ouro Premium */
+      --gold-light: #fef9c3;
+      --gold-hover: #b89628;
       --red: #dc2626;
       --red-light: #fee2e2;
-      --orange: #ea580c;
       --green: #16a34a;
       --bg: #0f172a;
       --surface: #1e293b;
@@ -32,7 +32,7 @@
     /* Navegação */
     .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--surface); display: flex; border-top: 1px solid var(--border); z-index: 100; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.3); }
     .nav-btn { flex: 1; padding: 12px 8px; border: none; background: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .nav-btn.active { color: var(--gold); border-top: 3px solid var(--gold); background: rgba(217, 119, 6, 0.05); }
+    .nav-btn.active { color: var(--gold); border-top: 3px solid var(--gold); background: rgba(212, 175, 55, 0.08); }
 
     /* Abas */
     .tab-content { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
@@ -49,6 +49,7 @@
     
     .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-gold { background: var(--gold); color: #000; }
+    .btn-gold:active { background: var(--gold-hover); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-sm { padding: 8px 12px; font-size: 0.75rem; width: auto; }
 
@@ -67,7 +68,7 @@
     .record-header-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
     .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
     .badge-alta { background: var(--red); color: #fff; }
-    .badge-media { background: var(--orange); color: #fff; }
+    .badge-media { background: var(--gold); color: #000; }
     .badge-baixa { background: var(--green); color: #fff; }
     .badge-ronda { background: var(--gold); color: #000; }
 
@@ -86,22 +87,20 @@
     .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
     .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
 
-    /* Preview tela de relatório */
+    /* Preview Tela de Relatório (Apenas texto em tela) */
     .report-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
     .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
 
     /* ==========================================================================
-       ESTILOS EXCLUSIVOS PARA IMPRESSÃO / PDF (RELATÓRIO COMERCIAL PREMIUM)
+       ESTILOS EXCLUSIVOS PARA IMPRESSÃO / PDF (AS IMAGENS SÓ SAEM AQUI)
        ========================================================================== */
     @media print {
-      /* Oculta tudo o que não for a área do relatório */
       body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 10pt; }
       .no-print, .nav-bar, .app-header, #tabDashboard, #tabAdmin { display: none !important; }
       
       #tabReport { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
       
-      /* Cabeçalho Profissional */
       .pdf-brand-header {
         border-bottom: 2px solid #0f172a;
         padding-bottom: 12px;
@@ -115,7 +114,6 @@
       .pdf-meta-block { text-align: right; font-size: 8.5pt; color: #334155; line-height: 1.3; }
       .pdf-meta-block strong { color: #0f172a; }
 
-      /* Estrutura de Seções / Rondas */
       .pdf-event-card {
         border: 1px solid #cbd5e1;
         border-radius: 6px;
@@ -133,13 +131,12 @@
       }
       .pdf-event-title { font-size: 11pt; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px; }
       .pdf-badge { padding: 2px 6px; border-radius: 3px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
-      .pdf-badge-ronda { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+      .pdf-badge-ronda { background: #fef9c3; color: #854d0e; border-color: #fde047; }
       .pdf-badge-alerta { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
       .pdf-event-body { padding: 12px; }
       .pdf-event-obs { background: #f1f5f9; border-left: 3px solid #475569; padding: 6px 10px; font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
 
-      /* Grade de Imagens de Alta Precisão */
       .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .pdf-img-box { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; height: 140px; background: #000; }
       .pdf-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -191,7 +188,7 @@
           <label>Nível de Prioridade</label>
           <select id="inpPriority" class="input-control">
             <option value="BAIXA">🟢 Baixa Prioridade</option>
-            <option value="MEDIA">🟠 Média Prioridade</option>
+            <option value="MEDIA">🟡 Média Prioridade</option>
             <option value="ALTA">🔴 Alta Prioridade (Alerta Crítico)</option>
           </select>
         </div>
@@ -271,7 +268,7 @@
     <div class="card no-print">
       <div class="card-title">📄 RELATÓRIO DO PLANTÃO</div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-        Abaixo está a pré-visualização. Clique no botão abaixo para gerar a versão limpa e profissional para impressão ou envio.
+        Confira o resumo das rondas e eventos registrados. Clique abaixo para gerar o PDF oficial com as imagens estampadas.
       </p>
       <button class="btn btn-gold" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
     </div>
@@ -700,7 +697,7 @@
         const formattedTime = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
         let html = `
-          <!-- CABEÇALHO INSTITUCIONAL DO PDF -->
+          <!-- CABEÇALHO EXCLUSIVO DO IMPRESSO/PDF -->
           <div class="pdf-brand-header">
             <div class="pdf-title-block">
               <h1>${config.company || 'RELATÓRIO PATRIMONIAL'}</h1>
@@ -716,14 +713,14 @@
 
         if (records.length === 0) {
           html += `
-            <div style="text-align: center; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 40px; margin-top: 20px;">
-              <p style="font-size: 10pt; color: #64748b; font-weight: 600;">Nenhum registro ou ronda foi gravado para este relatório.</p>
+            <div style="text-align: center; border: 1px dashed var(--border); border-radius: 6px; padding: 40px; margin-top: 20px;">
+              <p style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Nenhum registro ou ronda foi gravado para este relatório.</p>
             </div>`;
         } else {
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
-            // Visualização em tela (Preview)
+            // TELA: Apenas resumo textual limpo (sem fotos pesadas na tela)
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -731,13 +728,14 @@
                   <span style="color: ${isOcorrencia ? 'var(--red)' : 'var(--gold)'}">${isOcorrencia ? 'OCORRÊNCIA (' + rec.priority + ')' : 'RONDA'}</span>
                 </div>
                 <div class="report-summary-info">
+                  <div><strong>Horário:</strong> ${rec.timestamp}</div>
                   ${rec.observation ? `<div><strong>Obs:</strong> ${rec.observation}</div>` : ''}
-                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) registrada(s).</div>
+                  <div><strong>Fotos vinculadas:</strong> ${rec.images.length} foto(s) estampadas (serão impressas no PDF).</div>
                 </div>
               </div>
             `;
 
-            // Layout Comercial Premium para Impressão
+            // IMPRESSÃO: Estrutura completa incluindo a galeria de imagens
             html += `
               <div class="pdf-event-card">
                 <div class="pdf-event-header">
