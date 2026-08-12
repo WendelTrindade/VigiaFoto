@@ -3,153 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GUARDIÃO v1.2.0</title>
+  <title>GUARDIÃO v1.3.0</title>
   <style>
     :root { --gold: #eab308; --red: #dc2626; --bg: #0d0d0d; --card: #171717; --text: #fff; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
     
     .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; }
-    .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; border-top: 1px solid #333; z-index: 1000; }
-    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; cursor: pointer; }
-    .nav-btn.active { color: var(--gold); }
-    
     .tab { display: none; padding: 15px; }
     .tab.active { display: block; }
     
     .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
     .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; margin-bottom: 10px; }
-    .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 5px; }
+    .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 5px; }
     
-    .section-title { font-size: 0.9rem; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-    .checkbox-item { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.9rem; }
+    /* Pré-visualização */
+    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+    .preview-item { border: 2px solid #444; border-radius: 6px; overflow: hidden; background: #000; }
+    .preview-item img { width: 100%; height: auto; display: block; }
+
+    /* Admin Checkbox */
+    .field-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
     
-    /* Cores de Alerta */
-    .alert-box { border: 2px solid var(--red); background: #290808; }
-    
-    @media print { .no-print { display: none; } body { background: #fff; color: #000; } }
+    .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; border-top: 1px solid #333; z-index: 1000; }
+    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; cursor: pointer; }
+    .nav-btn.active { color: var(--gold); }
   </style>
 </head>
 <body>
 
-  <div class="header no-print">
-    <h1>🛡️ GUARDIÃO</h1>
-    <small style="color: #666;">v1.2.0</small>
-  </div>
+  <div class="header"><h1>🛡️ GUARDIÃO</h1><small>v1.3.0</small></div>
 
   <!-- ABA 1: REGISTRO -->
   <div id="tab1" class="tab active">
-    <!-- RONDA -->
     <div class="card">
-      <div class="section-title">🔄 NOVA RONDA</div>
-      <input type="number" id="numRonda" class="input-field" placeholder="Número da Ronda" value="1">
-      <label for="fileRonda" class="btn" style="background:var(--gold); color:#000;">SELECIONAR FOTOS</label>
-      <input type="file" id="fileRonda" multiple accept="image/*" style="display:none">
-      <button onclick="processarRegistro('RONDA')" class="btn" style="background:#16a34a;">PROCESSAR RONDA</button>
+        <label>TIPO DE REGISTRO:</label>
+        <select id="regType" class="input-field" onchange="toggleObs()">
+            <option value="RONDA">🔄 RONDA</option>
+            <option value="OCORRENCIA">⚠️ OCORRÊNCIA</option>
+        </select>
+        <input type="text" id="inpNum" class="input-field" placeholder="Número (Ronda/Ocorrência)">
+        <textarea id="inpObs" class="input-field" placeholder="Observações (Apenas para Ocorrências)" style="display:none"></textarea>
+        
+        <label for="fileInput" class="btn" style="background:#444;">📁 SELECIONAR FOTOS</label>
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="showPreview()">
+        
+        <button onclick="processar()" class="btn" style="background:var(--gold); color:#000;">PROCESSAR E SALVAR</button>
     </div>
-
-    <!-- OCORRÊNCIA -->
-    <div class="card alert-box">
-      <div class="section-title" style="color:var(--red);">⚠️ NOVA OCORRÊNCIA</div>
-      <select id="prioOcorrencia" class="input-field">
-        <option value="BAIXA">🟢 BAIXA</option>
-        <option value="MÉDIA">🟠 MÉDIA</option>
-        <option value="ALTA">🔴 ALTA</option>
-      </select>
-      <textarea id="obsOcorrencia" class="input-field" placeholder="Observações..." rows="2"></textarea>
-      <label for="fileOcorrencia" class="btn" style="background:var(--red);">SELECIONAR FOTOS</label>
-      <input type="file" id="fileOcorrencia" multiple accept="image/*" style="display:none">
-      <button onclick="processarRegistro('OCORRENCIA')" class="btn" style="background:var(--red);">PROCESSAR OCORRÊNCIA</button>
-    </div>
+    
+    <h3>Conferência:</h3>
+    <div id="previewContainer" class="preview-grid"></div>
   </div>
 
   <!-- ABA 2: ADMIN -->
   <div id="tab2" class="tab">
     <div class="card">
-        <div class="section-title">⚙️ CONFIGURAR ESTAMPA</div>
-        <div id="adminChecklist">
-            <div class="checkbox-item"><label>Data</label><input type="checkbox" data-key="date" checked></div>
-            <div class="checkbox-item"><label>Hora</label><input type="checkbox" data-key="time" checked></div>
-            <div class="checkbox-item"><label>Número da Ronda</label><input type="checkbox" data-key="ronda" checked></div>
-            <div class="checkbox-item"><label>Agente</label><input type="checkbox" data-key="agent" checked></div>
-            <div class="checkbox-item"><label>Empresa</label><input type="checkbox" data-key="company" checked></div>
+        <h3>⚙️ CONFIGURAR ESTAMPA</h3>
+        <div id="adminFields"></div>
+        <div style="margin-top:20px; border-top:1px solid #333; pt:10px;">
+            <input type="text" id="newFieldLabel" class="input-field" placeholder="Nome do novo campo (ex: Local)">
+            <button onclick="addField()" class="btn" style="background:#555;">+ ADICIONAR CAMPO</button>
+            <button onclick="saveConfig()" class="btn" style="background:var(--gold); color:#000;">SALVAR CONFIGURAÇÕES</button>
         </div>
-        <input type="text" id="cfgEmpresa" class="input-field" placeholder="Nome da Empresa">
-        <input type="text" id="cfgCustom" class="input-field" placeholder="Texto Customizado (Local, etc)">
-        <button onclick="salvarConfig()" class="btn" style="background:var(--gold); color:#000;">SALVAR CONFIGURAÇÕES</button>
     </div>
   </div>
 
-  <!-- ABA 3: RELATÓRIO -->
-  <div id="tab3" class="tab">
-    <div class="card">
-        <input type="text" id="repCriador" class="input-field" placeholder="Nome do Criador do Relatório">
-        <button onclick="window.print()" class="btn" style="background:#2563eb;">GERAR PDF / IMPRIMIR</button>
-    </div>
-    <div id="reportContainer"></div>
-  </div>
-
-  <nav class="nav-bar no-print">
+  <nav class="nav-bar">
     <button class="nav-btn active" onclick="showTab(1)">REGISTRO</button>
     <button class="nav-btn" onclick="showTab(2)">ADMIN</button>
-    <button class="nav-btn" onclick="showTab(3)">PDF</button>
   </nav>
 
   <canvas id="canvas" style="display:none"></canvas>
 
   <script>
     let db;
-    const request = indexedDB.open("GuardiaoDB", 9);
+    let config = JSON.parse(localStorage.getItem('guardiao_config')) || { fields: [{label:'Data', active:true}, {label:'Hora', active:true}, {label:'Agente', active:true}] };
+
+    // DB e Init
+    const request = indexedDB.open("GuardiaoDB", 10);
     request.onupgradeneeded = e => e.target.result.createObjectStore("regs", { autoIncrement: true });
-    request.onsuccess = e => { db = e.target.result; loadConfig(); };
+    request.onsuccess = e => { db = e.target.result; renderAdmin(); };
+
+    function toggleObs() {
+        document.getElementById('inpObs').style.display = document.getElementById('regType').value === 'OCORRENCIA' ? 'block' : 'none';
+    }
 
     function showTab(n) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab'+n).classList.add('active');
-        document.querySelectorAll('.nav-btn')[n-1].classList.add('active');
-        if(n === 3) renderReport();
     }
 
-    function salvarConfig() {
-        const config = {
-            items: {},
-            company: document.getElementById('cfgEmpresa').value,
-            custom: document.getElementById('cfgCustom').value
-        };
-        document.querySelectorAll('#adminChecklist input').forEach(i => config.items[i.dataset.key] = i.checked);
+    // --- LOGICA ADMIN ---
+    function renderAdmin() {
+        const div = document.getElementById('adminFields');
+        div.innerHTML = '';
+        config.fields.forEach((f, idx) => {
+            div.innerHTML += `
+                <div class="field-row">
+                    <label>${f.label}</label>
+                    <input type="checkbox" ${f.active ? 'checked' : ''} onchange="config.fields[${idx}].active = this.checked">
+                </div>`;
+        });
+    }
+
+    function addField() {
+        const val = document.getElementById('newFieldLabel').value;
+        if(val) {
+            config.fields.push({label: val, active: true});
+            renderAdmin();
+            document.getElementById('newFieldLabel').value = '';
+        }
+    }
+
+    function saveConfig() {
         localStorage.setItem('guardiao_config', JSON.stringify(config));
         alert("Configurações salvas!");
     }
 
-    function loadConfig() {
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{date:true, time:true, ronda:true, agent:true, company:true}, company: '', custom:''};
-        document.querySelectorAll('#adminChecklist input').forEach(i => i.checked = cfg.items[i.dataset.key]);
-        document.getElementById('cfgEmpresa').value = cfg.company || '';
-        document.getElementById('cfgCustom').value = cfg.custom || '';
+    // --- LOGICA IMAGEM ---
+    function showPreview() {
+        const container = document.getElementById('previewContainer');
+        container.innerHTML = '';
+        const files = document.getElementById('fileInput').files;
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                container.innerHTML += `<div class="preview-item"><img src="${e.target.result}"></div>`;
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
-    async function processarRegistro(type) {
-        const fileInput = type === 'RONDA' ? document.getElementById('fileRonda') : document.getElementById('fileOcorrencia');
-        const files = fileInput.files;
-        if(files.length === 0) return alert("Selecione fotos.");
+    async function processar() {
+        const files = document.getElementById('fileInput').files;
+        const container = document.getElementById('previewContainer');
+        container.innerHTML = 'Processando...';
         
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {items:{}, company:'', custom:''};
-        const meta = type === 'RONDA' ? { num: document.getElementById('numRonda').value } : { prio: document.getElementById('prioOcorrencia').value, obs: document.getElementById('obsOcorrencia').value };
-        
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        let processed = [];
+        let processedImages = [];
         for(let file of files) {
-            processed.push(await draw(file, type, meta, timeStr, cfg));
+            processedImages.push(await drawStamp(file));
         }
 
-        db.transaction("regs", "readwrite").objectStore("regs").add({ type, meta, time: timeStr, images: processed });
-        alert("Processado com sucesso!");
+        // Renderiza o resultado
+        container.innerHTML = '';
+        processedImages.forEach(src => {
+            container.innerHTML += `<div class="preview-item"><img src="${src}"></div>`;
+        });
+        alert("Processado!");
     }
 
-    function draw(file, type, meta, time, cfg) {
+    function drawStamp(file) {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => {
@@ -158,54 +161,20 @@
                 canvas.width = img.width; canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
                 
-                const h = img.height * 0.25;
-                ctx.fillStyle = type === 'OCORRENCIA' ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0,0,0,0.85)';
+                const h = img.height * 0.2;
+                ctx.fillStyle = document.getElementById('regType').value === 'OCORRENCIA' ? 'rgba(200, 0, 0, 0.8)' : 'rgba(0,0,0,0.8)';
                 ctx.fillRect(0, img.height-h, img.width, h);
+                
                 ctx.fillStyle = '#fff';
-                ctx.font = `bold ${h*0.25}px sans-serif`;
+                ctx.font = `bold ${h*0.3}px sans-serif`;
                 
-                let line1 = [];
-                if(cfg.items.ronda && meta.num) line1.push(`RONDA ${meta.num}`);
-                if(type === 'OCORRENCIA') line1.push(`ALERTA: ${meta.prio}`);
-                if(cfg.items.company && cfg.company) line1.push(cfg.company);
-                
-                let line2 = [];
-                if(cfg.items.agent) line2.push(`AGENTE: ${document.getElementById('inpAgente')?.value || ''}`);
-                if(cfg.items.date) line2.push(new Date().toLocaleDateString());
-                if(cfg.items.time) line2.push(time);
-                if(cfg.custom) line2.push(cfg.custom);
-                
-                ctx.fillText(line1.join(' | '), 40, img.height - h*0.6);
-                ctx.fillText(line2.join(' | '), 40, img.height - h*0.25);
+                let text = config.fields.filter(f => f.active).map(f => f.label).join(' | ');
+                ctx.fillText(text, 50, img.height - h*0.4);
                 
                 resolve(canvas.toDataURL('image/jpeg', 0.9));
             };
             img.src = URL.createObjectURL(file);
         });
-    }
-
-    function renderReport() {
-        const cont = document.getElementById('reportContainer');
-        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {company: 'EMPRESA'};
-        cont.innerHTML = `
-            <div style="border-bottom:2px solid #000; margin-bottom:20px;">
-                <h1>${cfg.company.toUpperCase()}</h1>
-                <p>Relatório: ${document.getElementById('repCriador').value || 'N/A'} | Data: ${new Date().toLocaleDateString()}</p>
-            </div>
-        `;
-        
-        db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
-            e.target.result.forEach(r => {
-                const isAlert = r.type === 'OCORRENCIA';
-                cont.innerHTML += `
-                    <div style="border: 2px solid ${isAlert?'red':'#ccc'}; padding:10px; margin-bottom:20px;">
-                        <h3 style="color:${isAlert?'red':'inherit'}">${r.type} ${r.type==='RONDA' ? r.meta.num : '- Prioridade: ' + r.meta.prio}</h3>
-                        ${isAlert ? '<p>Obs: ' + r.meta.obs + '</p>' : ''}
-                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:10px;">
-                        ${r.images.map(i=>`<img src="${i}" style="width:100%;">`).join('')}</div>
-                    </div>`;
-            });
-        };
     }
   </script>
 </body>
