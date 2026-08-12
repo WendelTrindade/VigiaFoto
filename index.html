@@ -37,7 +37,7 @@
     .tab-content { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
     .tab-content.active { display: block; }
 
-    /* Formulários e UI Controls */
+    /* UI Controls */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--gold); display: flex; align-items: center; justify-content: space-between; }
     
@@ -48,18 +48,17 @@
     
     .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-gold { background: var(--gold); color: #000; }
-    .btn-red { background: var(--red); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-sm { padding: 8px 12px; font-size: 0.75rem; width: auto; }
 
-    /* Barra de Progresso */
+    /* Progresso */
     .progress-wrapper { display: none; margin-top: 12px; }
     .progress-bar-bg { width: 100%; height: 10px; background: #0f172a; border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
     .progress-bar-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.2s ease; }
     .progress-text { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px; font-weight: 600; }
 
-    /* Lista de Cards Sanfona (Rondas / Ocorrências) */
-    .record-card { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; }
+    /* Cards do Dashboard */
+    .record-card { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; }
     .record-card.ocorrencia { border-left: 5px solid var(--red); }
     .record-card.ronda { border-left: 5px solid var(--gold); }
     
@@ -73,43 +72,41 @@
 
     .record-body { display: none; padding: 14px; border-top: 1px solid var(--border); background: #0f172a; }
     .record-body.expanded { display: block; }
-    
     .record-obs { font-size: 0.85rem; color: var(--text-muted); background: var(--surface); padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid var(--border); }
 
-    /* Grid de Imagens dentro do Card */
     .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
     .image-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: #000; }
     .image-item img { width: 100%; height: 100%; object-fit: cover; }
     .btn-delete-img { position: absolute; top: 4px; right: 4px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
 
-    /* Admin Checklist Dynamic */
+    /* Admin Checklist */
     .field-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #0f172a; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--border); }
     .field-row label { font-size: 0.85rem; font-weight: 600; cursor: pointer; flex: 1; }
     .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
     .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
 
-    /* Estilização da Tela do Relatório (Pré-visualização Interna) */
+    /* Tela de Pré-visualização do Relatório */
     .report-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
     .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Estilização Exclusiva de Impressão / PDF Executivo */
+    /* Layout do PDF para Impressão (Exclusivo para o Gerador de PDF) */
     @media print {
-      .no-print { display: none !important; }
+      .no-print, .nav-bar, .app-header { display: none !important; }
       body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 11pt; }
       .tab-content { display: block !important; max-width: 100% !important; padding: 0 !important; }
       
-      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-      .pdf-header h2 { font-size: 16pt; color: #000; margin-bottom: 4px; text-transform: uppercase; font-weight: 800; }
-      .pdf-header p { font-size: 9pt; color: #333; }
+      .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
+      .pdf-header h2 { font-size: 15pt; color: #000; margin-bottom: 2px; text-transform: uppercase; font-weight: 800; }
+      .pdf-header p { font-size: 8.5pt; color: #333; }
 
-      .pdf-section { margin-bottom: 18px; page-break-inside: avoid; }
-      .pdf-section-title { font-size: 10pt; font-weight: 800; padding: 5px 8px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 8px; display: flex; justify-content: space-between; }
+      .pdf-section { margin-bottom: 14px; page-break-inside: avoid; }
+      .pdf-section-title { font-size: 9.5pt; font-weight: 800; padding: 4px 6px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 6px; display: flex; justify-content: space-between; }
       .pdf-section-title.alert { border-left-color: var(--red); background: var(--red-light); color: var(--red); }
       
-      /* Grid de Miniaturas: exatamente 3 por linha */
+      /* Grid Limpo de Fotos com Estampa em Miniaturas (3 por linha / até 4 linhas por folha) */
       .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-      .pdf-img-card { border: 1px solid #ddd; border-radius: 3px; overflow: hidden; height: 110px; background: #f8fafc; }
+      .pdf-img-card { border: 1px solid #ccc; border-radius: 3px; overflow: hidden; height: 115px; background: #000; }
       .pdf-img-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
     }
   </style>
@@ -142,7 +139,7 @@
         <input type="text" id="inpIdentifier" class="input-control" placeholder="Ex: Ronda 01, Bloco A, Portaria...">
       </div>
 
-      <!-- Campos Exclusivos para Ocorrência -->
+      <!-- Campos Exclusivos de Ocorrência -->
       <div id="wrapperOcorrencia" style="display: none;">
         <div class="form-group">
           <label>Nível de Prioridade</label>
@@ -169,7 +166,7 @@
         <span id="fileCountBadge" style="font-size: 0.75rem; color: var(--gold); display: block; margin-top: 6px; font-weight: 600;"></span>
       </div>
 
-      <!-- Progresso de Carregamento -->
+      <!-- Barra de Progresso -->
       <div id="progressWrapper" class="progress-wrapper">
         <div class="progress-bar-bg">
           <div id="progressBarFill" class="progress-bar-fill"></div>
@@ -182,15 +179,12 @@
       </button>
     </div>
 
-    <!-- Lista de Cards Expandíveis -->
     <div class="no-print" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
       <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted);">REGISTROS DO PLANTÃO</h3>
       <button class="btn btn-outline btn-sm" onclick="clearAllData()">🗑️ Limpar Tudo</button>
     </div>
 
-    <div id="recordsContainer">
-      <!-- Cards serão injetados dinamicamente aqui -->
-    </div>
+    <div id="recordsContainer"></div>
   </main>
 
   <!-- TAB 2: PAINEL ADMINISTRATIVO -->
@@ -214,9 +208,7 @@
       <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block;">
         Campos do Carimbo (Checklist)
       </label>
-      <div id="dynamicFieldsContainer">
-        <!-- Checkboxes dinâmicos gerados via JS -->
-      </div>
+      <div id="dynamicFieldsContainer"></div>
 
       <div style="display: flex; gap: 8px; margin-top: 12px;">
         <input type="text" id="newFieldName" class="input-control" placeholder="Novo campo (ex: Setor, Viatura...)" style="margin-bottom: 0;">
@@ -230,15 +222,12 @@
     <div class="card no-print">
       <div class="card-title">📄 RELATÓRIO DO PLANTÃO</div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-        Confira o resumo dos itens gravados. Clique no botão abaixo para gerar a versão limpa em PDF para impressão.
+        Abaixo está o resumo dos eventos salvos. Ao imprimir ou salvar em PDF, somente os cabeçalhos das ocorrências e as miniaturas com foto/estampa serão exibidos.
       </p>
       <button class="btn btn-gold" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
     </div>
 
-    <!-- ÁREA COMPATÍVEL COM IMPRESSÃO/PDF -->
-    <div id="pdfRenderArea">
-      <!-- Layout gerado dinamicamente -->
-    </div>
+    <div id="pdfRenderArea"></div>
   </section>
 
   <!-- Navegação Inferior -->
@@ -261,13 +250,9 @@
   <canvas id="stampCanvas" style="display: none;"></canvas>
 
   <script>
-    /* ==========================================================================
-       ESTADO GLOBAL & BANCO DE DADOS LOCAL (IndexedDB)
-       ========================================================================== */
     let db = null;
     let selectedFiles = [];
     
-    // Configurações Padrão
     let config = JSON.parse(localStorage.getItem('guardiao_cfg_v2')) || {
       company: 'SEGURANÇA PATRIMONIAL',
       agent: 'VIGILANTE',
@@ -280,7 +265,6 @@
       ]
     };
 
-    // Inicialização do IndexedDB para Suportar Grandes Volumes de Fotos
     function initDB() {
       const request = indexedDB.open("GuardiaoProDB", 2);
       request.onupgradeneeded = (e) => {
@@ -300,9 +284,6 @@
       request.onerror = () => alert("Erro ao abrir banco de dados local.");
     }
 
-    /* ==========================================================================
-       NAVEGAÇÃO DE ABAS
-       ========================================================================== */
     function switchTab(tabId, btnElement) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -329,9 +310,6 @@
       }
     }
 
-    /* ==========================================================================
-       PAINEL ADMINISTRATIVO DINÂMICO
-       ========================================================================== */
     function renderAdminFields() {
       const container = document.getElementById('dynamicFieldsContainer');
       container.innerHTML = '';
@@ -390,9 +368,6 @@
       localStorage.setItem('guardiao_cfg_v2', JSON.stringify(config));
     }
 
-    /* ==========================================================================
-       PROCESSAMENTO DE FOTOS COM ESTAMPA E BARRA DE PROGRESSO
-       ========================================================================== */
     function handleFileSelection(event) {
       selectedFiles = Array.from(event.target.files);
       const badge = document.getElementById('fileCountBadge');
@@ -410,40 +385,30 @@
         return;
       }
 
-      // Exibe Barra de Progresso
       const progressWrapper = document.getElementById('progressWrapper');
       const progressBarFill = document.getElementById('progressBarFill');
       const progressText = document.getElementById('progressText');
       progressWrapper.style.display = 'block';
 
       const processedImages = [];
-      const rawImages = [];
       const timestamp = new Date();
 
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         
-        // 1. Gera Imagem com Estampa (uso do sistema)
+        // Aplica a estampa na imagem carregada
         const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp);
-        
-        // 2. Leitura da Imagem Limpa (uso do relatório PDF)
-        const rawBase64 = await readRawImage(file);
-
-        const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
         processedImages.push({
-          id: imgId,
-          data: stampedBase64,
-          raw: rawBase64
+          id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          data: stampedBase64
         });
 
-        // Atualiza Progresso
         const percent = Math.round(((i + 1) / selectedFiles.length) * 100);
         progressBarFill.style.width = percent + '%';
         progressText.innerText = `Processando imagens ${percent}% (${i + 1}/${selectedFiles.length})`;
       }
 
-      // Salva no IndexedDB
       const record = {
         id: 'rec_' + Date.now(),
         type: type,
@@ -457,7 +422,6 @@
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
-        // Reseta Formulário e Progresso
         setTimeout(() => {
           progressWrapper.style.display = 'none';
           progressBarFill.style.width = '0%';
@@ -469,14 +433,6 @@
           renderDashboardCards();
         }, 300);
       };
-    }
-
-    function readRawImage(file) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
     }
 
     function applyStampToImage(file, type, identifier, priority, dateObj) {
@@ -492,20 +448,16 @@
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
 
-            // Altura do Rodapé da Estampa (Proporcional)
             const bannerHeight = Math.max(120, img.height * 0.22);
             
-            // Cor de fundo: Vermelho escuro para ocorrências, preto/escuro para rondas
             ctx.fillStyle = (type === 'OCORRENCIA') ? 'rgba(185, 28, 28, 0.90)' : 'rgba(15, 23, 42, 0.90)';
             ctx.fillRect(0, img.height - bannerHeight, img.width, bannerHeight);
 
-            // Borda do Alerta
             if (type === 'OCORRENCIA') {
               ctx.fillStyle = '#dc2626';
               ctx.fillRect(0, img.height - bannerHeight, img.width, 10);
             }
 
-            // Construção das linhas de texto dinâmicas
             ctx.fillStyle = '#ffffff';
             const fontSize = Math.max(16, bannerHeight * 0.16);
             ctx.font = `bold ${fontSize}px sans-serif`;
@@ -542,9 +494,6 @@
       });
     }
 
-    /* ==========================================================================
-       RENDERIZAÇÃO DOS CARDS SANFONA (DASHBOARD)
-       ========================================================================== */
     function renderDashboardCards() {
       const container = document.getElementById('recordsContainer');
       container.innerHTML = '';
@@ -592,7 +541,6 @@
                 `).join('')}
               </div>
 
-              <!-- Ações do Card: Adicionar Mais Fotos ou Excluir Card -->
               <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="triggerAddMorePhotos('${rec.id}')">
                   📷 Adicionar Fotos
@@ -623,9 +571,6 @@
       }
     }
 
-    /* ==========================================================================
-       GESTÃO DINÂMICA DE FOTOS E CARDS
-       ========================================================================== */
     function triggerAddMorePhotos(recordId) {
       document.getElementById(`append_file_${recordId}`).click();
     }
@@ -643,12 +588,9 @@
 
         for (let file of files) {
           const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp);
-          const rawBase64 = await readRawImage(file);
-          
           record.images.push({
             id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            data: stampedBase64,
-            raw: rawBase64
+            data: stampedBase64
           });
         }
 
@@ -693,9 +635,6 @@
       tx.oncomplete = () => renderDashboardCards();
     }
 
-    /* ==========================================================================
-       RELATÓRIO PDF PREMIUM (LAYOUT E IMPRESSÃO)
-       ========================================================================== */
     function renderPdfReport() {
       const container = document.getElementById('pdfRenderArea');
       container.innerHTML = '';
@@ -705,7 +644,7 @@
         const records = e.target.result;
 
         let html = `
-          <div class="pdf-header">
+          <div class="pdf-header print-only">
             <h2>${config.company || 'RELATÓRIO PATRIMONIAL'}</h2>
             <p><strong>Agente:</strong> ${config.agent || 'N/A'} | <strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
           </div>
@@ -717,7 +656,7 @@
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
-            // Renderização limpa para a tela do celular (sem fotos)
+            // Tela do celular (Aba Relatório): Apenas resumo textual sem fotos para navegação leve
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -726,12 +665,12 @@
                 </div>
                 <div class="report-summary-info">
                   ${rec.observation ? `<div><strong>Obs:</strong> ${rec.observation}</div>` : ''}
-                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) anexada(s) ao PDF final.</div>
+                  <div><strong>Total de Fotos:</strong> ${rec.images.length} foto(s) estampadas prontas para impressão.</div>
                 </div>
               </div>
             `;
 
-            // Renderização estruturada para impressão/PDF (3 fotos por linha em miniaturas sem estampa)
+            // Impressão / PDF: Apenas título, observações e miniaturas com ESTAMPA (3 por linha)
             html += `
               <div class="pdf-section print-only" style="display: none;">
                 <div class="pdf-section-title ${isOcorrencia ? 'alert' : ''}">
@@ -743,7 +682,7 @@
                 <div class="pdf-grid">
                   ${rec.images.map(img => `
                     <div class="pdf-img-card">
-                      <img src="${img.raw || img.data}">
+                      <img src="${img.data}">
                     </div>
                   `).join('')}
                 </div>
@@ -754,7 +693,6 @@
 
         container.innerHTML = html;
 
-        // Estilo auxiliar para alternar visibilidade entre a tela e a impressão
         const style = document.createElement('style');
         style.innerHTML = `
           @media screen {
@@ -774,7 +712,6 @@
       w.document.write(`<img src="${src}" style="width:100%; height:auto;">`);
     }
 
-    // Inicializa o App
     window.onload = initDB;
   </script>
 </body>
