@@ -2,179 +2,156 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GUARDIÃO v1.3.0</title>
+  <title>GUARDIÃO - Sistema Fixo</title>
   <style>
-    :root { --gold: #eab308; --red: #dc2626; --bg: #0d0d0d; --card: #171717; --text: #fff; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
-    
+    :root { --gold: #eab308; --red: #dc2626; --bg: #121212; --card: #1e1e1e; --text: #fff; }
+    body { background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 80px; }
     .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; }
+    
+    /* Abas */
     .tab { display: none; padding: 15px; }
     .tab.active { display: block; }
-    
-    .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
-    .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; margin-bottom: 10px; }
-    .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 5px; }
-    
-    /* Pré-visualização */
-    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-    .preview-item { border: 2px solid #444; border-radius: 6px; overflow: hidden; background: #000; }
-    .preview-item img { width: 100%; height: auto; display: block; }
+    .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #000; border-top: 1px solid #333; }
+    .nav-btn { flex: 1; padding: 15px; background: none; border: none; color: #fff; font-weight: bold; }
+    .nav-btn.active { color: var(--gold); border-top: 2px solid var(--gold); }
 
-    /* Admin Checkbox */
-    .field-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+    /* Cards */
+    .card { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+    .thumb { aspect-ratio: 1; background: #333; overflow: hidden; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
     
-    .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; border-top: 1px solid #333; z-index: 1000; }
-    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; cursor: pointer; }
-    .nav-btn.active { color: var(--gold); }
+    @media print { .no-print { display: none; } body { background: #fff; color: #000; } }
   </style>
 </head>
 <body>
 
-  <div class="header"><h1>🛡️ GUARDIÃO</h1><small>v1.3.0</small></div>
+  <div class="header"><h1>🛡️ GUARDIÃO</h1></div>
 
-  <!-- ABA 1: REGISTRO -->
+  <!-- ABA 1: DASHBOARD (Cards) -->
   <div id="tab1" class="tab active">
+    <h3>Seus Registros</h3>
+    <div id="dashboardContainer"></div>
+  </div>
+
+  <!-- ABA 2: NOVO REGISTRO -->
+  <div id="tab2" class="tab">
     <div class="card">
-        <label>TIPO DE REGISTRO:</label>
-        <select id="regType" class="input-field" onchange="toggleObs()">
+        <select id="regType" class="card" style="width:100%" onchange="toggleType()">
             <option value="RONDA">🔄 RONDA</option>
             <option value="OCORRENCIA">⚠️ OCORRÊNCIA</option>
         </select>
-        <input type="text" id="inpNum" class="input-field" placeholder="Número (Ronda/Ocorrência)">
-        <textarea id="inpObs" class="input-field" placeholder="Observações (Apenas para Ocorrências)" style="display:none"></textarea>
-        
-        <label for="fileInput" class="btn" style="background:#444;">📁 SELECIONAR FOTOS</label>
-        <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="showPreview()">
-        
-        <button onclick="processar()" class="btn" style="background:var(--gold); color:#000;">PROCESSAR E SALVAR</button>
+        <input type="text" id="inpID" class="card" style="width:100%; border:none; background:#333; color:#fff" placeholder="Ex: Ronda 1 ou Ocorrencia 01">
+        <div id="divOcorrencia" style="display:none">
+            <select id="inpPrio" class="card" style="width:100%"><option>ALTA</option><option>MÉDIA</option><option>BAIXA</option></select>
+            <textarea id="inpObs" class="card" style="width:100%" placeholder="Observações da Ocorrência"></textarea>
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+        <button class="btn" style="background:var(--gold)" onclick="document.getElementById('fileInput').click()">SELECIONAR FOTOS</button>
+        <button class="btn" style="background:#28a745; color:#fff" onclick="salvarRegistro()">PROCESSAR E SALVAR</button>
     </div>
-    
-    <h3>Conferência:</h3>
-    <div id="previewContainer" class="preview-grid"></div>
   </div>
 
-  <!-- ABA 2: ADMIN -->
-  <div id="tab2" class="tab">
+  <!-- ABA 3: ADMIN & PDF -->
+  <div id="tab3" class="tab">
     <div class="card">
         <h3>⚙️ CONFIGURAR ESTAMPA</h3>
         <div id="adminFields"></div>
-        <div style="margin-top:20px; border-top:1px solid #333; pt:10px;">
-            <input type="text" id="newFieldLabel" class="input-field" placeholder="Nome do novo campo (ex: Local)">
-            <button onclick="addField()" class="btn" style="background:#555;">+ ADICIONAR CAMPO</button>
-            <button onclick="saveConfig()" class="btn" style="background:var(--gold); color:#000;">SALVAR CONFIGURAÇÕES</button>
-        </div>
+        <input type="text" id="newField" placeholder="Novo campo (ex: Local)" class="card" style="width:100%; border:none">
+        <button class="btn" onclick="addField()">+ ADICIONAR CAMPO</button>
+        <button class="btn" style="background:var(--gold)" onclick="saveConfig()">SALVAR CONFIG</button>
+    </div>
+    <div class="card">
+        <button class="btn" style="background:#007bff; color:#fff" onclick="window.print()">GERAR RELATÓRIO PDF</button>
     </div>
   </div>
 
-  <nav class="nav-bar">
-    <button class="nav-btn active" onclick="showTab(1)">REGISTRO</button>
-    <button class="nav-btn" onclick="showTab(2)">ADMIN</button>
-  </nav>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showTab(1)">DASHBOARD</button>
+    <button class="nav-btn" onclick="showTab(2)">NOVO</button>
+    <button class="nav-btn" onclick="showTab(3)">CONFIG</button>
+  </div>
 
   <canvas id="canvas" style="display:none"></canvas>
 
   <script>
-    let db;
-    let config = JSON.parse(localStorage.getItem('guardiao_config')) || { fields: [{label:'Data', active:true}, {label:'Hora', active:true}, {label:'Agente', active:true}] };
-
-    // DB e Init
-    const request = indexedDB.open("GuardiaoDB", 10);
-    request.onupgradeneeded = e => e.target.result.createObjectStore("regs", { autoIncrement: true });
-    request.onsuccess = e => { db = e.target.result; renderAdmin(); };
-
-    function toggleObs() {
-        document.getElementById('inpObs').style.display = document.getElementById('regType').value === 'OCORRENCIA' ? 'block' : 'none';
-    }
+    let db, config = JSON.parse(localStorage.getItem('g_cfg')) || {fields: ['Data', 'Hora', 'Agente']};
+    
+    // DB Init
+    const req = indexedDB.open("GuardiaoDB", 11);
+    req.onupgradeneeded = e => e.target.result.createObjectStore("regs", { keyPath: "id" });
+    req.onsuccess = e => { db = e.target.result; renderDashboard(); renderAdmin(); };
 
     function showTab(n) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab'+n).classList.add('active');
+        document.querySelectorAll('.tab').forEach((t, i) => t.className = (i+1==n ? 'tab active' : 'tab'));
+        document.querySelectorAll('.nav-btn').forEach((b, i) => b.className = (i+1==n ? 'nav-btn active' : 'nav-btn'));
     }
 
-    // --- LOGICA ADMIN ---
+    function toggleType() {
+        document.getElementById('divOcorrencia').style.display = (document.getElementById('regType').value === 'OCORRENCIA' ? 'block' : 'none');
+    }
+
+    // ADMIN
     function renderAdmin() {
         const div = document.getElementById('adminFields');
-        div.innerHTML = '';
-        config.fields.forEach((f, idx) => {
-            div.innerHTML += `
-                <div class="field-row">
-                    <label>${f.label}</label>
-                    <input type="checkbox" ${f.active ? 'checked' : ''} onchange="config.fields[${idx}].active = this.checked">
-                </div>`;
-        });
+        div.innerHTML = config.fields.map((f, i) => `<div class="card">${f} <button onclick="config.fields.splice(${i},1);renderAdmin()">X</button></div>`).join('');
     }
-
     function addField() {
-        const val = document.getElementById('newFieldLabel').value;
-        if(val) {
-            config.fields.push({label: val, active: true});
-            renderAdmin();
-            document.getElementById('newFieldLabel').value = '';
-        }
+        config.fields.push(document.getElementById('newField').value);
+        renderAdmin();
     }
+    function saveConfig() { localStorage.setItem('g_cfg', JSON.stringify(config)); alert("Salvo!"); }
 
-    function saveConfig() {
-        localStorage.setItem('guardiao_config', JSON.stringify(config));
-        alert("Configurações salvas!");
-    }
-
-    // --- LOGICA IMAGEM ---
-    function showPreview() {
-        const container = document.getElementById('previewContainer');
-        container.innerHTML = '';
+    // DADOS
+    async function salvarRegistro() {
+        const type = document.getElementById('regType').value;
+        const id = document.getElementById('inpID').value;
         const files = document.getElementById('fileInput').files;
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                container.innerHTML += `<div class="preview-item"><img src="${e.target.result}"></div>`;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
+        let images = [];
 
-    async function processar() {
-        const files = document.getElementById('fileInput').files;
-        const container = document.getElementById('previewContainer');
-        container.innerHTML = 'Processando...';
-        
-        let processedImages = [];
         for(let file of files) {
-            processedImages.push(await drawStamp(file));
+            images.push(await draw(file, type, id));
         }
 
-        // Renderiza o resultado
-        container.innerHTML = '';
-        processedImages.forEach(src => {
-            container.innerHTML += `<div class="preview-item"><img src="${src}"></div>`;
-        });
-        alert("Processado!");
+        const data = { id, type, images, meta: { prio: document.getElementById('inpPrio').value, obs: document.getElementById('inpObs').value } };
+        db.transaction("regs", "readwrite").objectStore("regs").put(data);
+        alert("Salvo!");
+        renderDashboard();
     }
 
-    function drawStamp(file) {
-        return new Promise(resolve => {
+    function draw(file, type, id) {
+        return new Promise(res => {
             const img = new Image();
             img.onload = () => {
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width; canvas.height = img.height;
+                const c = document.getElementById('canvas');
+                const ctx = c.getContext('2d');
+                c.width = img.width; c.height = img.height;
                 ctx.drawImage(img, 0, 0);
-                
-                const h = img.height * 0.2;
-                ctx.fillStyle = document.getElementById('regType').value === 'OCORRENCIA' ? 'rgba(200, 0, 0, 0.8)' : 'rgba(0,0,0,0.8)';
-                ctx.fillRect(0, img.height-h, img.width, h);
-                
-                ctx.fillStyle = '#fff';
-                ctx.font = `bold ${h*0.3}px sans-serif`;
-                
-                let text = config.fields.filter(f => f.active).map(f => f.label).join(' | ');
-                ctx.fillText(text, 50, img.height - h*0.4);
-                
-                resolve(canvas.toDataURL('image/jpeg', 0.9));
+                ctx.fillStyle = type === 'OCORRENCIA' ? 'red' : 'black';
+                ctx.fillRect(0, img.height-200, img.width, 200);
+                ctx.fillStyle = 'white';
+                ctx.font = '50px sans-serif';
+                ctx.fillText(id + " | " + config.fields.join(' | '), 50, img.height-100);
+                res(c.toDataURL());
             };
             img.src = URL.createObjectURL(file);
         });
+    }
+
+    function renderDashboard() {
+        const cont = document.getElementById('dashboardContainer');
+        cont.innerHTML = '';
+        db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
+            e.target.result.forEach(r => {
+                cont.innerHTML += `
+                    <div class="card" onclick="this.lastElementChild.style.display=(this.lastElementChild.style.display==='none'?'grid':'none')">
+                        <h3>${r.type}: ${r.id} ${r.type==='OCORRENCIA'?'('+r.meta.prio+')':''}</h3>
+                        <p>${r.meta.obs || ''}</p>
+                        <div class="grid" style="display:none">${r.images.map(i => `<div class="thumb"><img src="${i}"></div>`).join('')}</div>
+                    </div>`;
+            });
+        };
     }
   </script>
 </body>
