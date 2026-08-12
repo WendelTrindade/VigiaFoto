@@ -78,8 +78,6 @@
 
     .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
     .image-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center; }
-    
-    /* AJUSTE PARA NÃO CORTAR A IMAGEM EM TELA */
     .image-item img { width: 100%; height: 100%; object-fit: contain; }
     
     .btn-delete-img { position: absolute; top: 4px; right: 4px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; z-index: 5; }
@@ -107,7 +105,6 @@
       
       #tabReport { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
       
-      /* Exibe o bloco de PDF durante a impressão */
       .pdf-only { display: block !important; }
 
       .pdf-brand-header {
@@ -147,8 +144,6 @@
       .pdf-event-obs { background: #f1f5f9; border-left: 3px solid #475569; padding: 6px 10px; font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
 
       .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-      
-      /* AJUSTE PARA EXIBIR A IMAGEM COMPLETA NO PDF */
       .pdf-img-box { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; min-height: 140px; }
       .pdf-img-box img { width: 100%; height: auto; max-height: 220px; object-fit: contain; display: block; }
       
@@ -310,6 +305,7 @@
     const APP_VERSION = "v2.1.0";
     let db = null;
     let selectedFiles = [];
+    let expandedCardIds = new Set();
     
     let config = JSON.parse(localStorage.getItem('guardiao_cfg_v2')) || {
       company: 'SEGURANÇA PATRIMONIAL',
@@ -495,7 +491,6 @@
       };
     }
 
-    /* ESTAMPA SEM CORTAR AS BORDAS DA IMAGEM ORIGINAL */
     function applyStampToImage(file, type, identifier, priority, dateObj) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -505,17 +500,12 @@
             const canvas = document.getElementById('stampCanvas');
             const ctx = canvas.getContext('2d');
 
-            // Mantém exatamente a largura e altura originais da foto
             canvas.width = img.width;
-            
-            // Adiciona a faixa do carimbo no rodapé SEM sobrepor/cortar a imagem
             const bannerHeight = Math.max(80, Math.round(img.height * 0.12));
             canvas.height = img.height + bannerHeight;
 
-            // Desenha a imagem completa no topo
             ctx.drawImage(img, 0, 0, img.width, img.height);
 
-            // Desenha a faixa de carimbo logo abaixo da foto
             ctx.fillStyle = (type === 'OCORRENCIA') ? 'rgba(185, 28, 28, 1)' : 'rgba(15, 23, 42, 1)';
             ctx.fillRect(0, img.height, img.width, bannerHeight);
 
@@ -580,6 +570,7 @@
         records.forEach((rec) => {
           const card = document.createElement('div');
           card.className = `record-card ${rec.type.toLowerCase()}`;
+          const isExpanded = expandedCardIds.has(rec.id);
           
           let badgeHtml = rec.type === 'RONDA' 
             ? `<span class="badge badge-ronda">RONDA</span>`
@@ -592,10 +583,10 @@
                 <span>${rec.identifier}</span>
                 ${badgeHtml}
               </div>
-              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;" id="icon_exp_${rec.id}">▼ (${rec.images.length})</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;" id="icon_exp_${rec.id}">${isExpanded ? '▲' : '▼'} (${rec.images.length})</span>
             </div>
 
-            <div id="body_${rec.id}" class="record-body">
+            <div id="body_${rec.id}" class="record-body ${isExpanded ? 'expanded' : ''}">
               ${rec.observation ? `<div class="record-obs"><strong>Obs:</strong> ${rec.observation}</div>` : ''}
               
               <div class="image-grid" id="grid_${rec.id}">
@@ -630,9 +621,11 @@
       
       if (isExpanded) {
         body.classList.remove('expanded');
+        expandedCardIds.delete(recordId);
         icon.innerText = icon.innerText.replace('▲', '▼');
       } else {
         body.classList.add('expanded');
+        expandedCardIds.add(recordId);
         icon.innerText = icon.innerText.replace('▼', '▲');
       }
     }
@@ -641,28 +634,49 @@
       document.getElementById(`append_file_${recordId}`).click();
     }
 
+    /* ADIÇÃO E PROCESSAMENTO DAS NOVAS FOTOS COM ESTAMPA */
     async function appendPhotosToRecord(event, recordId) {
       const files = Array.from(event.target.files);
       if (files.length === 0) return;
+
+      const progressWrapper = document.getElementById('progressWrapper');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const progressText = document.getElementById('progressText');
+      progressWrapper.style.display = 'block';
 
       const tx = db.transaction("records", "readwrite");
       const store = tx.objectStore("records");
 
       store.get(recordId).onsuccess = async (e) => {
         const record = e.target.result;
+        if (!record) return;
+
         const timestamp = new Date();
 
-        for (let file of files) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
           const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp);
+          
           record.images.push({
             id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
             data: stampedBase64
           });
+
+          const percent = Math.round(((i + 1) / files.length) * 100);
+          progressBarFill.style.width = percent + '%';
+          progressText.innerText = `Incluindo novas fotos ${percent}% (${i + 1}/${files.length})`;
         }
 
-        store.put(record);
-        tx.oncomplete = () => {
-          renderDashboardCards();
+        const updateTx = db.transaction("records", "readwrite");
+        updateTx.objectStore("records").put(record);
+        updateTx.oncomplete = () => {
+          setTimeout(() => {
+            progressWrapper.style.display = 'none';
+            progressBarFill.style.width = '0%';
+            event.target.value = '';
+            expandedCardIds.add(recordId);
+            renderDashboardCards();
+          }, 300);
         };
       };
     }
@@ -691,14 +705,20 @@
       if (!confirm("Deseja remover todo este card e suas fotos?")) return;
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").delete(recordId);
-      tx.oncomplete = () => renderDashboardCards();
+      tx.oncomplete = () => {
+        expandedCardIds.delete(recordId);
+        renderDashboardCards();
+      };
     }
 
     function clearAllData() {
       if (!confirm("ATENÇÃO: Deseja apagar TODOS os registros do plantão atual?")) return;
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").clear();
-      tx.oncomplete = () => renderDashboardCards();
+      tx.oncomplete = () => {
+        expandedCardIds.clear();
+        renderDashboardCards();
+      };
     }
 
     function renderPdfReport() {
@@ -737,7 +757,6 @@
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
-            // TELA: Apenas resumo textual limpo (Ocultado no PDF)
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -752,7 +771,6 @@
               </div>
             `;
 
-            // IMPRESSÃO: Estrutura completa incluindo a galeria de imagens (Oculta na tela via .pdf-only)
             html += `
               <div class="pdf-event-card pdf-only">
                 <div class="pdf-event-header">
