@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO - Sistema de Ronda e Ocorrências</title>
+  <title>GUARDIÃO - Sistema de Plantão</title>
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -66,7 +66,6 @@
     }
     .preview-item img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Estilos do Relatório Impresso / Gerado */
     .report-modal {
       display: none; position: fixed; inset: 0; background: #000;
       z-index: 100; padding: 15px; overflow-y: auto; color: #000;
@@ -94,24 +93,25 @@
   <div class="app-bar">
     <div class="brand-title">
       <h1>🛡️ GUARDIÃO</h1>
-      <span>SISTEMA DE PLANTÃO</span>
+      <span>SISTEMA DE PLANTÃO COMPLETO</span>
     </div>
   </div>
 
   <div class="container">
-    <!-- Configurações do Agente -->
     <div class="card">
       <label>AGENTE EM PLANTÃO:</label>
       <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA" placeholder="Nome do Agente">
+
+      <label>LOCAL / POSTO DE TRABALHO:</label>
+      <input type="text" id="txtPosto" class="input-field" value="POSTO CENTRAL" placeholder="Ex: SETOR A / RUA 01">
     </div>
 
-    <!-- Alternador de Abas: Ronda x Ocorrência -->
     <div class="tabs">
-      <button class="tab-btn active" id="tabRonda" onclick="switchTab('RONDA')">🔄 RONDAS</button>
-      <button class="tab-btn" id="tabOcorrencia" onclick="switchTab('OCORRENCIA')">⚠️ OCORRÊNCIAS</button>
+      <button class="tab-btn active" id="tabRonda" onclick="switchTab('RONDA')">🔄 RONDA</button>
+      <button class="tab-btn" id="tabOcorrencia" onclick="switchTab('OCORRENCIA')">⚠️ OCORRÊNCIA</button>
     </div>
 
-    <!-- PAINEL DE RONDAS -->
+    <!-- PAINEL DE RONDA -->
     <div class="card" id="panelRonda">
       <div class="grid-2">
         <div>
@@ -119,19 +119,19 @@
           <input type="number" id="numRonda" class="input-field" value="1" min="1">
         </div>
         <div>
-          <label>DATA/HORA:</label>
+          <label>DATA/HORA DA ESTAMPA:</label>
           <select id="selectDataRonda" class="input-field">
-            <option value="AGORA">Hora Atual</option>
-            <option value="ARQUIVO">Hora da Foto</option>
+            <option value="AGORA">Hora Atual (Automática)</option>
+            <option value="ARQUIVO">Hora Original da Foto</option>
           </select>
         </div>
       </div>
 
-      <label for="fileRonda" class="btn-select">📂 CARREGAR FOTOS DA RONDA</label>
+      <label for="fileRonda" class="btn-select">📂 SELECCIONAR FOTOS DA RONDA</label>
       <input type="file" id="fileRonda" accept="image/*" multiple style="display: none;">
 
       <div class="preview-grid" id="previewRonda"></div>
-      <button id="btnSaveRonda" class="btn-action" style="display:none;">💾 SALVAR RONDA NO SISTEMA</button>
+      <button id="btnSaveRonda" class="btn-action" style="display:none;">💾 PROCESSAR E SALVAR RONDA</button>
     </div>
 
     <!-- PAINEL DE OCORRÊNCIAS -->
@@ -146,43 +146,43 @@
           </select>
         </div>
         <div>
-          <label>LOCAL / POSTO:</label>
-          <input type="text" id="txtLocalOcorrencia" class="input-field" placeholder="Ex: Portão B">
+          <label>LOCAL ESPECÍFICO:</label>
+          <input type="text" id="txtLocalOcorrencia" class="input-field" placeholder="Ex: PORTÃO DE ACESSO">
         </div>
       </div>
 
       <label>DESCRIÇÃO DA OCORRÊNCIA:</label>
-      <textarea id="txtDescOcorrencia" class="input-field" rows="2" placeholder="Relate o que aconteceu..."></textarea>
+      <textarea id="txtDescOcorrencia" class="input-field" rows="2" placeholder="Descreva o ocorrido..."></textarea>
 
       <label for="fileOcorrencia" class="btn-select">📂 FOTOS DA OCORRÊNCIA</label>
       <input type="file" id="fileOcorrencia" accept="image/*" multiple style="display: none;">
 
       <div class="preview-grid" id="previewOcorrencia"></div>
-      <button id="btnSaveOcorrencia" class="btn-action" style="display:none;">💾 REGISTRAR OCORRÊNCIA</button>
+      <button id="btnSaveOcorrencia" class="btn-action" style="display:none;">💾 SALVAR OCORRÊNCIA</button>
     </div>
 
-    <!-- RESUMO DO PLANTÃO E AÇÕES -->
+    <!-- STATUS DOS REGISTROS SALVOS -->
     <div class="card">
-      <label>REGISTROS SALVOS NO DISPOSITIVO:</label>
-      <div id="statusStorage" style="font-size: 0.85rem; color: #aaa; margin: 5px 0;">Carregando registros...</div>
+      <label>REGISTROS NO DISPOSITIVO:</label>
+      <div id="statusStorage" style="font-size: 0.85rem; color: #aaa; margin: 5px 0;">Carregando dados...</div>
 
       <button onclick="generateReport()" class="btn-action btn-report">📋 GERAR RELATÓRIO DO PLANTÃO</button>
-      <button onclick="clearAllData()" class="btn-action btn-danger">🗑️ LIMPAR PLANTÃO ATUAL</button>
+      <button onclick="clearAllData()" class="btn-action btn-danger">🗑️ LIMPAR REGISTROS DO PLANTÃO</button>
     </div>
   </div>
 
-  <!-- MODAL DO RELATÓRIO FINAL -->
+  <!-- RELATÓRIO FINAL IMPRESSO -->
   <div class="report-modal" id="reportModal">
     <div class="report-paper">
       <div class="report-header">
         <h2>🛡️ RELATÓRIO DE PLANTÃO - GUARDIÃO</h2>
-        <p><strong>Agente:</strong> <span id="repAgente"></span></p>
-        <p><strong>Emissão:</strong> <span id="repData"></span></p>
+        <p><strong>Agente:</strong> <span id="repAgente"></span> | <strong>Posto:</strong> <span id="repPosto"></span></p>
+        <p><strong>Data de Emissão:</strong> <span id="repData"></span></p>
       </div>
 
       <div id="repContent"></div>
 
-      <button onclick="window.print()" class="btn-action" style="background:#000; margin-top:15px;">🖨️ IMPRIMIR / SALVAR PDF</button>
+      <button onclick="window.print()" class="btn-action" style="background:#000; margin-top:15px;">🖨️ IMPRIMIR OU SALVAR PDF</button>
       <button onclick="closeReport()" class="btn-action btn-danger">FECHAR</button>
     </div>
   </div>
@@ -190,7 +190,6 @@
   <canvas id="workCanvas"></canvas>
 
   <script>
-    // Configuração do IndexedDB (Banco de dados local do celular)
     let db;
     const request = indexedDB.open("GuardiaoDB", 1);
     request.onupgradeneeded = (e) => {
@@ -204,7 +203,6 @@
       updateStorageStatus();
     };
 
-    // Alternar Abas
     function switchTab(tab) {
       document.getElementById('tabRonda').classList.toggle('active', tab === 'RONDA');
       document.getElementById('tabOcorrencia').classList.toggle('active', tab === 'OCORRENCIA');
@@ -212,7 +210,6 @@
       document.getElementById('panelOcorrencia').style.display = tab === 'OCORRENCIA' ? 'block' : 'none';
     }
 
-    // Gerenciador de Fotos - Ronda
     let rondaFiles = [];
     document.getElementById('fileRonda').addEventListener('change', (e) => {
       rondaFiles = Array.from(e.target.files);
@@ -220,7 +217,6 @@
       document.getElementById('btnSaveRonda').style.display = rondaFiles.length ? 'block' : 'none';
     });
 
-    // Gerenciador de Fotos - Ocorrência
     let ocorrenciaFiles = [];
     document.getElementById('fileOcorrencia').addEventListener('change', (e) => {
       ocorrenciaFiles = Array.from(e.target.files);
@@ -243,9 +239,10 @@
       });
     }
 
-    // Processar e Salvar Ronda
+    // PROCESSA E SALVA A RONDA (RESTAURA O CARIMBO COMPLETO)
     document.getElementById('btnSaveRonda').addEventListener('click', async () => {
       const agente = document.getElementById('txtAgente').value.toUpperCase();
+      const posto = document.getElementById('txtPosto').value.toUpperCase();
       const numRonda = document.getElementById('numRonda').value;
       const modoData = document.getElementById('selectDataRonda').value;
 
@@ -253,7 +250,9 @@
       for (let i = 0; i < rondaFiles.length; i++) {
         const file = rondaFiles[i];
         const dateStr = modoData === 'AGORA' ? getNowStr() : getFileDateStr(file);
-        const imgData = await stampImage(file, `RONDA ${numRonda} - FOTO ${i+1}`, agente, dateStr);
+        
+        // Estampa contendo: Título, Agente, Posto, Data e Hora
+        const imgData = await stampImage(file, `RONDA ${numRonda} - FOTO ${i+1}`, agente, posto, dateStr);
         processedImages.push(imgData);
       }
 
@@ -261,31 +260,35 @@
         tipo: 'RONDA',
         titulo: `Ronda nº ${numRonda}`,
         agente: agente,
+        posto: posto,
         dataHora: getNowStr(),
         imagens: processedImages
       };
 
       saveToDB(record, () => {
-        alert(`Ronda ${numRonda} salva com sucesso!`);
+        alert(`Ronda ${numRonda} processada e salva com sucesso!`);
         rondaFiles = [];
         document.getElementById('previewRonda').innerHTML = '';
         document.getElementById('btnSaveRonda').style.display = 'none';
+        
+        // Incrementa automaticamente para a próxima ronda (Ex: Ronda 1 -> Ronda 2)
         document.getElementById('numRonda').value = parseInt(numRonda) + 1;
         updateStorageStatus();
       });
     });
 
-    // Processar e Salvar Ocorrência
+    // PROCESSA E SALVA A OCORRÊNCIA
     document.getElementById('btnSaveOcorrencia').addEventListener('click', async () => {
       const agente = document.getElementById('txtAgente').value.toUpperCase();
+      const posto = document.getElementById('txtPosto').value.toUpperCase();
       const prioridade = document.getElementById('selectPrio').value;
-      const local = document.getElementById('txtLocalOcorrencia').value.toUpperCase() || 'NÃO INFORMADO';
-      const descricao = document.getElementById('txtDescOcorrencia').value || 'Sem descrição';
+      const local = document.getElementById('txtLocalOcorrencia').value.toUpperCase() || 'LOCAL NÃO ESPECIFICADO';
+      const descricao = document.getElementById('txtDescOcorrencia').value || 'Sem descrição informada.';
 
       const processedImages = [];
       for (let i = 0; i < ocorrenciaFiles.length; i++) {
         const file = ocorrenciaFiles[i];
-        const imgData = await stampImage(file, `OCORRÊNCIA [${prioridade}] - FOTO ${i+1}`, agente, getNowStr());
+        const imgData = await stampImage(file, `OCORRÊNCIA [${prioridade}] - FOTO ${i+1}`, agente, `${posto} (${local})`, getNowStr());
         processedImages.push(imgData);
       }
 
@@ -295,12 +298,13 @@
         local: local,
         descricao: descricao,
         agente: agente,
+        posto: posto,
         dataHora: getNowStr(),
         imagens: processedImages
       };
 
       saveToDB(record, () => {
-        alert("Ocorrência registrada com sucesso!");
+        alert("Ocorrência salva com sucesso!");
         ocorrenciaFiles = [];
         document.getElementById('previewOcorrencia').innerHTML = '';
         document.getElementById('btnSaveOcorrencia').style.display = 'none';
@@ -309,8 +313,8 @@
       });
     });
 
-    // Função para Estampar a Imagem
-    function stampImage(file, titulo, agente, dataStr) {
+    // FUNÇÃO QUE APLICA O CARIMBO COM TODAS AS INFORMAÇÕES NA IMAGEM
+    function stampImage(file, titulo, agente, localStr, dataStr) {
       return new Promise((resolve) => {
         const canvas = document.getElementById('workCanvas');
         const ctx = canvas.getContext('2d');
@@ -322,32 +326,45 @@
 
           const w = img.width;
           const h = img.height;
-          const footerH = h * 0.18;
+          const footerH = h * 0.22;
           const footerY = h - footerH;
 
-          ctx.fillStyle = 'rgba(13, 13, 13, 0.85)';
+          // Rodapé escuro com transparência
+          ctx.fillStyle = 'rgba(13, 13, 13, 0.88)';
           ctx.fillRect(0, footerY, w, footerH);
 
+          // Borda superior amarela
           ctx.fillStyle = '#eab308';
-          ctx.fillRect(0, footerY, w, footerH * 0.04);
+          ctx.fillRect(0, footerY, w, footerH * 0.03);
 
           const padX = w * 0.04;
 
+          // Linha 1: Título e Foto da Ronda/Ocorrência
           ctx.fillStyle = '#eab308';
-          ctx.font = `900 ${footerH * 0.30}px sans-serif`;
-          ctx.fillText(titulo, padX, footerY + (footerH * 0.40));
+          ctx.font = `900 ${footerH * 0.26}px sans-serif`;
+          ctx.fillText(titulo, padX, footerY + (footerH * 0.30));
 
+          // Linha 2: Nome do Agente
           ctx.fillStyle = '#ffffff';
-          ctx.font = `700 ${footerH * 0.20}px sans-serif`;
-          ctx.fillText(`AGENTE: ${agente}  |  ${dataStr}`, padX, footerY + (footerH * 0.75));
+          ctx.font = `800 ${footerH * 0.18}px sans-serif`;
+          ctx.fillText(`AGENTE: ${agente}`, padX, footerY + (footerH * 0.52));
 
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
+          // Linha 3: Local / Posto
+          ctx.fillStyle = '#d4d4d4';
+          ctx.font = `700 ${footerH * 0.16}px sans-serif`;
+          ctx.fillText(`LOCAL: ${localStr}`, padX, footerY + (footerH * 0.72));
+
+          // Linha 4: Data e Hora
+          ctx.fillStyle = '#a3a3a3';
+          ctx.font = `600 ${footerH * 0.15}px sans-serif`;
+          ctx.fillText(`DATA/HORA: ${dataStr}`, padX, footerY + (footerH * 0.88));
+
+          resolve(canvas.toDataURL('image/jpeg', 0.90));
         };
         img.src = URL.createObjectURL(file);
       });
     }
 
-    // Auxiliares de Banco de Dados
     function saveToDB(record, callback) {
       const tx = db.transaction("registros", "readwrite");
       const store = tx.objectStore("registros");
@@ -363,7 +380,7 @@
         const list = req.result;
         const rondas = list.filter(r => r.tipo === 'RONDA').length;
         const ocorrencias = list.filter(r => r.tipo === 'OCORRENCIA').length;
-        document.getElementById('statusStorage').innerHTML = `📌 <strong>${rondas}</strong> Rondas salvas | ⚠️ <strong>${ocorrencias}</strong> Ocorrências registradas`;
+        document.getElementById('statusStorage').innerHTML = `📌 <strong>${rondas}</strong> Rondas registradas | ⚠️ <strong>${ocorrencias}</strong> Ocorrências salvas`;
       };
     }
 
@@ -372,13 +389,13 @@
         const tx = db.transaction("registros", "readwrite");
         tx.objectStore("registros").clear();
         tx.oncomplete = () => {
-          alert("Plantão limpo com sucesso!");
+          alert("Plantão limpo!");
+          document.getElementById('numRonda').value = "1";
           updateStorageStatus();
         };
       }
     }
 
-    // Gerar Relatório Consolidado
     function generateReport() {
       const tx = db.transaction("registros", "readonly");
       const store = tx.objectStore("registros");
@@ -387,15 +404,16 @@
       req.onsuccess = () => {
         const records = req.result;
         if (records.length === 0) {
-          alert("Nenhum registro encontrado para gerar o relatório.");
+          alert("Não há registros gravados para criar o relatório.");
           return;
         }
 
         document.getElementById('repAgente').innerText = document.getElementById('txtAgente').value;
+        document.getElementById('repPosto').innerText = document.getElementById('txtPosto').value;
         document.getElementById('repData').innerText = getNowStr();
 
         let html = '';
-        records.forEach((rec, idx) => {
+        records.forEach((rec) => {
           if (rec.tipo === 'RONDA') {
             html += `
               <div class="report-section">
@@ -430,15 +448,14 @@
       document.getElementById('reportModal').style.display = 'none';
     }
 
-    // Datas formatadas
     function getNowStr() {
       const d = new Date();
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
     }
 
     function getFileDateStr(file) {
       const d = new Date(file.lastModified);
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
     }
   </script>
 </body>
