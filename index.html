@@ -87,20 +87,26 @@
     .field-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
     .btn-remove-field { background: none; border: none; color: var(--red); font-weight: bold; padding: 0 8px; cursor: pointer; margin-left: 8px; }
 
-    /* Preview Tela de Relatório (Apenas texto em tela) */
+    /* Preview Tela de Relatório */
     .report-summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
     .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
     .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
 
+    /* Esconde o bloco de PDF impresso da TELA DO NAVEGADOR */
+    .pdf-only { display: none !important; }
+
     /* ==========================================================================
-       ESTILOS EXCLUSIVOS PARA IMPRESSÃO / PDF (AS IMAGENS SÓ SAEM AQUI)
+       ESTILOS EXCLUSIVOS PARA IMPRESSÃO / PDF
        ========================================================================== */
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 10pt; }
-      .no-print, .nav-bar, .app-header, #tabDashboard, #tabAdmin { display: none !important; }
+      .no-print, .nav-bar, .app-header, #tabDashboard, #tabAdmin, .report-summary-card { display: none !important; }
       
       #tabReport { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
       
+      /* Exibe o bloco de PDF durante a impressão */
+      .pdf-only { display: block !important; }
+
       .pdf-brand-header {
         border-bottom: 2px solid #0f172a;
         padding-bottom: 12px;
@@ -697,8 +703,8 @@
         const formattedTime = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
         let html = `
-          <!-- CABEÇALHO EXCLUSIVO DO IMPRESSO/PDF -->
-          <div class="pdf-brand-header">
+          <!-- CABEÇALHO EXCLUSIVO DO IMPRESSO/PDF (Oculto na tela do App) -->
+          <div class="pdf-brand-header pdf-only">
             <div class="pdf-title-block">
               <h1>${config.company || 'RELATÓRIO PATRIMONIAL'}</h1>
               <p>RELATÓRIO FOTOGRÁFICO DE INSPEÇÃO E PLANTÃO</p>
@@ -720,7 +726,7 @@
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
-            // TELA: Apenas resumo textual limpo (sem fotos pesadas na tela)
+            // TELA: Apenas resumo textual limpo (Ocultado no PDF)
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -735,9 +741,9 @@
               </div>
             `;
 
-            // IMPRESSÃO: Estrutura completa incluindo a galeria de imagens
+            // IMPRESSÃO: Estrutura completa incluindo a galeria de imagens (Oculta na tela via .pdf-only)
             html += `
-              <div class="pdf-event-card">
+              <div class="pdf-event-card pdf-only">
                 <div class="pdf-event-header">
                   <div class="pdf-event-title">
                     <span>${rec.type === 'RONDA' ? '🔄' : '⚠️'}</span>
@@ -773,7 +779,7 @@
         }
 
         html += `
-          <div class="pdf-footer">
+          <div class="pdf-footer pdf-only">
             Documento emitido automaticamente via Guardião Pro - Sistema de Segurança Patrimonial
           </div>
         `;
