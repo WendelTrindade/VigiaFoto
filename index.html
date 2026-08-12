@@ -23,10 +23,11 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
 
-    /* Header */
+    /* Header com Tag de Versão */
     .app-header { background: var(--surface); padding: 16px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
     .app-header h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: 1px; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .app-header small { color: var(--gold); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .version-badge { background: var(--gold); color: #000; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 
     /* Navegação */
     .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--surface); display: flex; border-top: 1px solid var(--border); z-index: 100; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.3); }
@@ -90,7 +91,7 @@
     .report-summary-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
     .report-summary-info { font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Layout do PDF para Impressão (Exclusivo para o Gerador de PDF) */
+    /* Layout do PDF para Impressão */
     @media print {
       .no-print, .nav-bar, .app-header { display: none !important; }
       body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 11pt; }
@@ -104,7 +105,6 @@
       .pdf-section-title { font-size: 9.5pt; font-weight: 800; padding: 4px 6px; background: #f1f5f9; border-left: 4px solid #000; margin-bottom: 6px; display: flex; justify-content: space-between; }
       .pdf-section-title.alert { border-left-color: var(--red); background: var(--red-light); color: var(--red); }
       
-      /* Grid Limpo de Fotos com Estampa em Miniaturas (3 por linha / até 4 linhas por folha) */
       .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
       .pdf-img-card { border: 1px solid #ccc; border-radius: 3px; overflow: hidden; height: 115px; background: #000; }
       .pdf-img-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -115,7 +115,7 @@
 
   <!-- App Header -->
   <header class="app-header no-print">
-    <h1>🛡️ GUARDIÃO PRO</h1>
+    <h1>🛡️ GUARDIÃO PRO <span class="version-badge" id="appVersionDisplay">v2.1.0</span></h1>
     <small id="headerCompanyDisplay">SISTEMA DE CONTROLE DE PLANTÃO</small>
   </header>
 
@@ -139,7 +139,6 @@
         <input type="text" id="inpIdentifier" class="input-control" placeholder="Ex: Ronda 01, Bloco A, Portaria...">
       </div>
 
-      <!-- Campos Exclusivos de Ocorrência -->
       <div id="wrapperOcorrencia" style="display: none;">
         <div class="form-group">
           <label>Nível de Prioridade</label>
@@ -156,7 +155,6 @@
         </div>
       </div>
 
-      <!-- Seleção de Arquivos -->
       <div class="form-group">
         <label>Fotos da Galeria / Câmera</label>
         <button type="button" class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
@@ -166,7 +164,6 @@
         <span id="fileCountBadge" style="font-size: 0.75rem; color: var(--gold); display: block; margin-top: 6px; font-weight: 600;"></span>
       </div>
 
-      <!-- Barra de Progresso -->
       <div id="progressWrapper" class="progress-wrapper">
         <div class="progress-bar-bg">
           <div id="progressBarFill" class="progress-bar-fill"></div>
@@ -215,6 +212,12 @@
         <button class="btn btn-gold btn-sm" onclick="addNewField()" style="width: auto; white-space: nowrap;">+ Adicionar</button>
       </div>
     </div>
+
+    <!-- Bloco de Informações da Versão -->
+    <div class="card" style="text-align: center; background: rgba(0,0,0,0.2);">
+      <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold);">SISTEMA GUARDIÃO PRO</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Versão Instalada: <strong id="adminVersionDisplay" style="color: #fff;">v2.1.0</strong></div>
+    </div>
   </section>
 
   <!-- TAB 3: RELATÓRIO FINAL / PDF -->
@@ -250,6 +253,9 @@
   <canvas id="stampCanvas" style="display: none;"></canvas>
 
   <script>
+    // DECLARAÇÃO DA VERSÃO DO SISTEMA
+    const APP_VERSION = "v2.1.0";
+
     let db = null;
     let selectedFiles = [];
     
@@ -266,6 +272,10 @@
     };
 
     function initDB() {
+      // Exibe a versão na interface
+      document.getElementById('appVersionDisplay').innerText = APP_VERSION;
+      document.getElementById('adminVersionDisplay').innerText = APP_VERSION;
+
       const request = indexedDB.open("GuardiaoProDB", 2);
       request.onupgradeneeded = (e) => {
         const database = e.target.result;
@@ -396,7 +406,6 @@
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         
-        // Aplica a estampa na imagem carregada
         const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp);
 
         processedImages.push({
@@ -656,7 +665,6 @@
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
             
-            // Tela do celular (Aba Relatório): Apenas resumo textual sem fotos para navegação leve
             html += `
               <div class="report-summary-card no-print">
                 <div class="report-summary-header">
@@ -670,7 +678,6 @@
               </div>
             `;
 
-            // Impressão / PDF: Apenas título, observações e miniaturas com ESTAMPA (3 por linha)
             html += `
               <div class="pdf-section print-only" style="display: none;">
                 <div class="pdf-section-title ${isOcorrencia ? 'alert' : ''}">
