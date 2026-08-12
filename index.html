@@ -3,139 +3,192 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GUARDIÃO - Gestor de Plantão</title>
-  
+  <title>GUARDIÃO v1.0.0</title>
   <style>
-    :root { --gold: #eab308; --bg: #0d0d0d; --card: #171717; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: var(--bg); color: #fff; padding: 15px; }
+    :root { --primary: #eab308; --bg: #0d0d0d; --card: #171717; --text: #fff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 70px; }
     
-    .app-bar { background: var(--card); padding: 15px; border-bottom: 3px solid var(--gold); border-radius: 8px; text-align: center; margin-bottom: 20px; }
-    .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px; }
-    .input-field { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #000; color: #fff; margin-bottom: 10px; }
+    /* App UI */
+    .header { background: var(--card); padding: 15px; border-bottom: 3px solid var(--primary); text-align: center; }
+    .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; border-top: 1px solid #333; }
+    .nav-btn { flex: 1; padding: 15px; text-align: center; border: none; background: none; color: #888; font-weight: bold; }
+    .nav-btn.active { color: var(--primary); }
     
-    /* Botão que abre a Galeria */
-    .btn-galeria { width: 100%; padding: 15px; background: var(--gold); color: #000; font-weight: bold; border-radius: 8px; text-align: center; display: block; cursor: pointer; }
-    .btn-process { width: 100%; padding: 15px; background: #16a34a; border: none; border-radius: 8px; color: #fff; font-weight: bold; margin-top: 10px; }
+    .tab { display: none; padding: 15px; }
+    .tab.active { display: block; }
     
-    .topic-card { border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: #1a1a1a; }
+    .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
+    .input-field { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; margin-bottom: 10px; }
+    .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: #000; }
+    
+    /* Admin Toggle */
+    .toggle-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    
+    /* Gallery */
     .thumb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
-    .thumb { aspect-ratio: 1; border-radius: 4px; overflow: hidden; }
+    .thumb { aspect-ratio: 1; border-radius: 4px; overflow: hidden; background: #222; }
     .thumb img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 100; overflow-y: auto; padding: 20px; color: #000; }
-    @media print { .no-print { display: none; } .modal { display: block !important; position: static; } }
+
+    @media print { .no-print { display: none; } }
   </style>
 </head>
 <body>
 
-  <div class="app-bar no-print"><h1>🛡️ GUARDIÃO</h1></div>
+  <div class="header">
+    <h1>🛡️ GUARDIÃO</h1>
+    <small style="color: #666;">Versão: 1.0.0</small>
+  </div>
 
-  <div class="container no-print">
+  <!-- ABA 1: RONDA -->
+  <div id="tab1" class="tab active">
     <div class="card">
-        <label>AGENTE:</label>
-        <input type="text" id="txtAgente" class="input-field" value="CARLOS SILVA">
-    </div>
-
-    <div class="card">
-      <label>🔄 NOVA RONDA (1 a 10)</label>
+      <label>AGENTE:</label>
+      <input type="text" id="inpAgente" class="input-field" value="CARLOS SILVA">
+      
+      <label>🔄 NÚMERO DA RONDA (1-10)</label>
       <input type="number" id="numRonda" class="input-field" value="1" min="1" max="10">
       
-      <!-- Este é o seletor que chama a Galeria -->
-      <label for="fileInput" class="btn-galeria">📁 SELECIONAR FOTOS DA GALERIA</label>
+      <label for="fileInput" class="btn" style="background:var(--primary); text-align:center; display:block;">📁 SELECIONAR DA GALERIA</label>
       <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
       
-      <button id="btnProcess" class="btn-process">PROCESSAR RONDA</button>
+      <button onclick="processarRonda()" class="btn" style="background:#16a34a; margin-top:10px;">PROCESSAR FOTOS</button>
     </div>
-
     <div id="topicContainer"></div>
-    <button onclick="openReport()" class="btn-process" style="background:#2563eb">📋 GERAR RELATÓRIO PDF</button>
   </div>
 
-  <div id="reportModal" class="modal">
-      <div style="max-width: 800px; margin: auto;">
-          <h2>RELATÓRIO DE PLANTÃO</h2>
-          <div id="repContent"></div>
-          <br>
-          <button onclick="window.print()" class="btn-process no-print">IMPRIMIR / SALVAR PDF</button>
-          <button onclick="document.getElementById('reportModal').style.display='none'" class="btn-process no-print" style="background:#666">FECHAR</button>
-      </div>
+  <!-- ABA 2: ADMIN -->
+  <div id="tab2" class="tab">
+    <div class="card">
+        <h3>⚙️ CONFIGURAR ESTAMPA</h3>
+        <p><small>O que deve aparecer na foto:</small></p><br>
+        <div class="toggle-group"><label>Mostrar Hora:</label> <input type="checkbox" id="cfgTime" checked></div>
+        <div class="toggle-group"><label>Mostrar Agente:</label> <input type="checkbox" id="cfgAgent" checked></div>
+        <div class="toggle-group"><label>Mostrar Nº Ronda:</label> <input type="checkbox" id="cfgRonda" checked></div>
+        <input type="text" id="cfgCustom" class="input-field" placeholder="Texto customizado (ex: Local)">
+        <button onclick="salvarConfig()" class="btn" style="background:var(--primary);">SALVAR CONFIGURAÇÕES</button>
+    </div>
   </div>
+
+  <!-- ABA 3: RELATÓRIO -->
+  <div id="tab3" class="tab">
+    <div class="card">
+        <h3>📋 RELATÓRIO FINAL</h3>
+        <button onclick="window.print()" class="btn" style="background:#2563eb;">GERAR PDF / IMPRIMIR</button>
+    </div>
+    <div id="reportContainer"></div>
+  </div>
+
+  <nav class="nav-bar">
+    <button class="nav-btn active" onclick="showTab(1)">RONDA</button>
+    <button class="nav-btn" onclick="showTab(2)">ADMIN</button>
+    <button class="nav-btn" onclick="showTab(3)">RELATÓRIO</button>
+  </nav>
 
   <canvas id="canvas" style="display:none"></canvas>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    // Inicialização
     let db;
+    const request = indexedDB.open("GuardiaoDB", 7);
+    request.onupgradeneeded = e => e.target.result.createObjectStore("regs", { autoIncrement: true });
+    request.onsuccess = e => { db = e.target.result; loadData(); loadConfig(); };
 
-    const request = indexedDB.open("GuardiaoDB", 6);
-    request.onupgradeneeded = (e) => { db = e.target.result; if(!db.objectStoreNames.contains("regs")) db.createObjectStore("regs", { autoIncrement: true }); };
-    request.onsuccess = (e) => { db = e.target.result; loadTopics(); };
+    // Configurações
+    function salvarConfig() {
+        const config = {
+            time: document.getElementById('cfgTime').checked,
+            agent: document.getElementById('cfgAgent').checked,
+            ronda: document.getElementById('cfgRonda').checked,
+            custom: document.getElementById('cfgCustom').value
+        };
+        localStorage.setItem('guardiao_config', JSON.stringify(config));
+        alert("Configurações salvas!");
+    }
 
-    document.getElementById('btnProcess').onclick = async () => {
+    function loadConfig() {
+        const cfg = JSON.parse(localStorage.getItem('guardiao_config')) || {time:true, agent:true, ronda:true, custom:''};
+        document.getElementById('cfgTime').checked = cfg.time;
+        document.getElementById('cfgAgent').checked = cfg.agent;
+        document.getElementById('cfgRonda').checked = cfg.ronda;
+        document.getElementById('cfgCustom').value = cfg.custom;
+    }
+
+    // Navegação
+    function showTab(n) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab'+n).classList.add('active');
+        document.querySelectorAll('.nav-btn')[n-1].classList.add('active');
+        if(n === 3) renderReport();
+    }
+
+    // Lógica Processamento
+    async function processarRonda() {
         const files = document.getElementById('fileInput').files;
-        let num = parseInt(document.getElementById('numRonda').value);
-        if(num > 10) { alert("Limite de 10 rondas!"); return; }
-        if(files.length === 0) { alert("Selecione as fotos da galeria primeiro."); return; }
-
+        const num = document.getElementById('numRonda').value;
+        const agent = document.getElementById('inpAgente').value;
         const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        let processed = [];
-        
-        for(let file of files) { processed.push(await drawStamp(file, num, time)); }
-        
-        const tx = db.transaction("regs", "readwrite");
-        tx.objectStore("regs").add({ num, time, images: processed });
-        tx.oncomplete = () => { loadTopics(); document.getElementById('numRonda').value = num + 1; };
-    };
+        const config = JSON.parse(localStorage.getItem('guardiao_config')) || {time:true, agent:true, ronda:true, custom:''};
 
-    function drawStamp(file, num, time) {
+        let processed = [];
+        for(let file of files) {
+            processed.push(await draw(file, num, agent, time, config));
+        }
+
+        const tx = db.transaction("regs", "readwrite");
+        tx.objectStore("regs").add({ num, agent, time, images: processed });
+        tx.oncomplete = () => { loadData(); alert("Processado!"); };
+    }
+
+    function draw(file, num, agent, time, cfg) {
         return new Promise(resolve => {
             const img = new Image();
             img.onload = () => {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
                 canvas.width = img.width; canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
+                
                 const h = img.height * 0.2;
                 ctx.fillStyle = 'rgba(0,0,0,0.85)';
                 ctx.fillRect(0, img.height-h, img.width, h);
                 ctx.fillStyle = '#eab308';
                 ctx.font = `bold ${h*0.3}px sans-serif`;
-                ctx.fillText(`RONDA ${num} | ${time} | AGENTE: ${document.getElementById('txtAgente').value}`, 50, img.height - h*0.4);
+                
+                let text = "";
+                if(cfg.ronda) text += `RONDA ${num} `;
+                if(cfg.agent) text += `| AGENTE: ${agent} `;
+                if(cfg.time) text += `| ${time} `;
+                if(cfg.custom) text += `| ${cfg.custom}`;
+                
+                ctx.fillText(text, 50, img.height - h*0.4);
                 resolve(canvas.toDataURL('image/jpeg', 0.9));
             };
             img.src = URL.createObjectURL(file);
         });
     }
 
-    function loadTopics() {
+    function loadData() {
         const container = document.getElementById('topicContainer');
         container.innerHTML = '';
-        const tx = db.transaction("regs", "readonly");
-        tx.objectStore("regs").getAll().onsuccess = (e) => {
-            e.target.result.forEach((reg) => {
+        db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
+            e.target.result.forEach(r => {
                 const div = document.createElement('div');
-                div.className = 'topic-card';
-                div.innerHTML = `<strong>🔄 RONDA ${reg.num}</strong> - ${reg.time}
-                                 <div class="thumb-grid">${reg.images.map(img => `<div class="thumb"><img src="${img}"></div>`).join('')}</div>`;
+                div.className = 'card';
+                div.innerHTML = `<strong>🔄 RONDA ${r.num}</strong> - ${r.time}<div class="thumb-grid">${r.images.map(i=>`<div class="thumb"><img src="${i}"></div>`).join('')}</div>`;
                 container.appendChild(div);
             });
         };
     }
 
-    function openReport() {
-        const repContent = document.getElementById('repContent');
-        repContent.innerHTML = '';
-        const tx = db.transaction("regs", "readonly");
-        tx.objectStore("regs").getAll().onsuccess = (e) => {
-            e.target.result.forEach(reg => {
-                const sec = document.createElement('div');
-                sec.innerHTML = `<h3 style="margin-top:20px;">RONDA ${reg.num} (${reg.time})</h3>
-                                 <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-                                 ${reg.images.map(img => `<img src="${img}" style="width:100%; border:1px solid #ccc;">`).join('')}
-                                 </div>`;
-                repContent.appendChild(sec);
+    function renderReport() {
+        const cont = document.getElementById('reportContainer');
+        cont.innerHTML = '';
+        db.transaction("regs", "readonly").objectStore("regs").getAll().onsuccess = e => {
+            e.target.result.forEach(r => {
+                cont.innerHTML += `<h3>RONDA ${r.num}</h3><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:10px;">${r.images.map(i=>`<img src="${i}" style="width:100%; border:1px solid #fff;">`).join('')}</div>`;
             });
-            document.getElementById('reportModal').style.display = 'block';
         };
     }
   </script>
