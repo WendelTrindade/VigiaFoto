@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GUARDIÃO PRO</title>
+  <title>GUARDIÃO IMAGENS</title>
   <style>
     :root {
-      --gold: #d4af37;
-      --gold-light: #fef9c3;
-      --gold-hover: #b89628;
-      --red: #dc2626;
+      --gold: #e0b93a;
+      --gold-light: #fdf3d0;
+      --gold-hover: #b8952a;
+      --red: #e11d2a;
       --red-light: #fee2e2;
       --green: #16a34a;
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-card: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #475569;
+      --bg: #0a0a0a;
+      --surface: #171717;
+      --surface-card: #262626;
+      --text: #f5f5f5;
+      --text-muted: #a3a3a3;
+      --border: #3a3a3a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -75,6 +75,8 @@
     .record-body { display: none; padding: 14px; border-top: 1px solid var(--border); background: #0f172a; }
     .record-body.expanded { display: block; }
     .record-obs { font-size: 0.85rem; color: var(--text-muted); background: var(--surface); padding: 10px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid var(--border); }
+    .record-location { font-size: 0.8rem; margin-bottom: 12px; }
+    .record-location a { color: var(--gold); text-decoration: none; font-weight: 700; }
 
     .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
     .image-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center; }
@@ -95,10 +97,15 @@
 
     .pdf-only { display: none !important; }
 
+    /* Modal de Edição */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 300; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: var(--surface); border: 1px solid var(--gold); border-radius: 12px; padding: 18px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal-title { font-size: 1rem; font-weight: 800; color: var(--gold); margin-bottom: 14px; }
+
     /* IMPRESSÃO / PDF EXCLUSIVO */
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 10pt; }
-      .no-print, .nav-bar, .app-header, #tabDashboard, #tabAdmin, .report-summary-card { display: none !important; }
+      .no-print, .nav-bar, .app-header, #tabDashboard, .report-summary-card { display: none !important; }
       
       #tabReport { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
       
@@ -139,6 +146,7 @@
 
       .pdf-event-body { padding: 12px; }
       .pdf-event-obs { background: #f1f5f9; border-left: 3px solid #475569; padding: 6px 10px; font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
+      .pdf-event-location { font-size: 8pt; color: #334155; margin-bottom: 8px; }
 
       .pdf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .pdf-img-box { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; min-height: 140px; }
@@ -162,7 +170,7 @@
 
   <!-- App Header -->
   <header class="app-header no-print">
-    <h1>🛡️ GUARDIÃO PRO <span class="version-badge" id="appVersionDisplay">v2.2.0</span></h1>
+    <h1>🛡️ GUARDIÃO IMAGENS <span class="version-badge" id="appVersionDisplay">v2.3.0</span></h1>
     <small id="headerCompanyDisplay">SISTEMA DE CONTROLE DE PLANTÃO</small>
   </header>
 
@@ -172,7 +180,12 @@
       <div class="card-title">
         <span>➕ REGISTRAR EVENTO</span>
       </div>
-      
+
+      <div class="form-group">
+        <label>Responsável pelo Relatório *</label>
+        <input type="text" id="inpResponsavel" class="input-control" placeholder="Nome completo de quem está fazendo o registro" onchange="saveResponsavelConfig()">
+      </div>
+
       <div class="form-group">
         <label>Tipo de Evento</label>
         <select id="regType" class="input-control" onchange="toggleFormMode()">
@@ -182,7 +195,7 @@
       </div>
 
       <div class="form-group">
-        <label id="lblIdentifier">Identificador da Ronda</label>
+        <label id="lblIdentifier">Identificador da Ronda *</label>
         <input type="text" id="inpIdentifier" class="input-control" placeholder="Ex: Ronda 01, Bloco A, Portaria...">
       </div>
 
@@ -231,42 +244,7 @@
     <div id="recordsContainer"></div>
   </main>
 
-  <!-- TAB 2: PAINEL ADMINISTRATIVO -->
-  <section id="tabAdmin" class="tab-content no-print">
-    <div class="card">
-      <div class="card-title">⚙️ CONFIGURAÇÃO DA ESTAMPA</div>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
-        Marque os itens ativos ou crie novos campos personalizados para aparecer no carimbo das fotos.
-      </p>
-
-      <div class="form-group">
-        <label>Nome da Empresa / Posto</label>
-        <input type="text" id="cfgCompany" class="input-control" placeholder="Ex: Segurança Patrimonial Silva" onchange="saveCompanyConfig()">
-      </div>
-
-      <div class="form-group">
-        <label>Nome do Agente / Vigilante</label>
-        <input type="text" id="cfgAgent" class="input-control" placeholder="Ex: Agente Carlos" onchange="saveAgentConfig()">
-      </div>
-
-      <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block;">
-        Campos do Carimbo (Checklist)
-      </label>
-      <div id="dynamicFieldsContainer"></div>
-
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <input type="text" id="newFieldName" class="input-control" placeholder="Novo campo (ex: Setor, Viatura...)" style="margin-bottom: 0;">
-        <button class="btn btn-gold btn-sm" onclick="addNewField()" style="width: auto; white-space: nowrap;">+ Adicionar</button>
-      </div>
-    </div>
-
-    <div class="card" style="text-align: center; background: rgba(0,0,0,0.2);">
-      <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold);">SISTEMA GUARDIÃO PRO</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Versão Instalada: <strong id="adminVersionDisplay" style="color: #fff;">v2.2.0</strong></div>
-    </div>
-  </section>
-
-  <!-- TAB 3: RELATÓRIO FINAL / PDF -->
+  <!-- TAB 2: RELATÓRIO FINAL / PDF -->
   <section id="tabReport" class="tab-content">
     <div class="card no-print">
       <div class="card-title">📄 RELATÓRIO DO PLANTÃO</div>
@@ -285,28 +263,52 @@
       <span>📱</span>
       <span>Registros</span>
     </button>
-    <button class="nav-btn" onclick="switchTab('tabAdmin', this)">
-      <span>⚙️</span>
-      <span>Painel Admin</span>
-    </button>
     <button class="nav-btn" onclick="switchTab('tabReport', this)">
       <span>📄</span>
       <span>Relatório</span>
     </button>
   </nav>
 
+  <!-- Modal de Edição de Registro -->
+  <div id="editModalOverlay" class="modal-overlay no-print" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-title">✏️ Editar Registro</div>
+      <div class="form-group">
+        <label>Identificador</label>
+        <input type="text" id="editIdentifier" class="input-control">
+      </div>
+      <div class="form-group" id="editPriorityWrapper" style="display: none;">
+        <label>Nível de Prioridade</label>
+        <select id="editPriority" class="input-control">
+          <option value="BAIXA">🟢 Baixa Prioridade</option>
+          <option value="MEDIA">🟡 Média Prioridade</option>
+          <option value="ALTA">🔴 Alta Prioridade (Alerta Crítico)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Observação</label>
+        <textarea id="editObservation" class="input-control" rows="3"></textarea>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button class="btn btn-outline" style="flex: 1;" onclick="closeEditModal()">Cancelar</button>
+        <button class="btn btn-gold" style="flex: 1;" onclick="saveEditedRecord()">💾 Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Canvas Oculto para Estampa -->
   <canvas id="stampCanvas" style="display: none;"></canvas>
 
   <script>
-    const APP_VERSION = "v2.2.0";
+    const APP_VERSION = "v2.3.0";
     let db = null;
     let selectedFiles = [];
     let expandedCardIds = new Set();
+    let editingRecordId = null;
     
     let config = JSON.parse(localStorage.getItem('guardiao_cfg_v2')) || {
       company: 'SEGURANÇA PATRIMONIAL',
-      agent: 'VIGILANTE',
+      agent: '',
       fields: [
         { id: 'date', label: 'Data', active: true },
         { id: 'time', label: 'Hora', active: true },
@@ -318,7 +320,6 @@
 
     function initDB() {
       document.getElementById('appVersionDisplay').innerText = APP_VERSION;
-      document.getElementById('adminVersionDisplay').innerText = APP_VERSION;
 
       const request = indexedDB.open("GuardiaoProDB", 2);
       request.onupgradeneeded = (e) => {
@@ -330,12 +331,15 @@
       request.onsuccess = (e) => {
         db = e.target.result;
         renderDashboardCards();
-        renderAdminFields();
-        document.getElementById('cfgCompany').value = config.company;
-        document.getElementById('cfgAgent').value = config.agent;
+        document.getElementById('inpResponsavel').value = config.agent;
         document.getElementById('headerCompanyDisplay').innerText = config.company || 'SISTEMA DE CONTROLE DE PLANTÃO';
       };
       request.onerror = () => alert("Erro ao abrir banco de dados local.");
+    }
+
+    function saveResponsavelConfig() {
+      config.agent = document.getElementById('inpResponsavel').value.trim();
+      saveConfigState();
     }
 
     function switchTab(tabId, btnElement) {
@@ -357,65 +361,11 @@
       
       if (type === 'OCORRENCIA') {
         wrapper.style.display = 'block';
-        label.innerText = 'Identificador da Ocorrência';
+        label.innerText = 'Identificador da Ocorrência *';
       } else {
         wrapper.style.display = 'none';
-        label.innerText = 'Identificador da Ronda';
+        label.innerText = 'Identificador da Ronda *';
       }
-    }
-
-    function renderAdminFields() {
-      const container = document.getElementById('dynamicFieldsContainer');
-      container.innerHTML = '';
-
-      config.fields.forEach((field, index) => {
-        const row = document.createElement('div');
-        row.className = 'field-row';
-        row.innerHTML = `
-          <label for="chk_${index}">${field.label}</label>
-          <input type="checkbox" id="chk_${index}" ${field.active ? 'checked' : ''} onchange="toggleFieldActive(${index}, this.checked)">
-          ${index > 4 ? `<button class="btn-remove-field" onclick="removeCustomField(${index})">✕</button>` : ''}
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function toggleFieldActive(index, isChecked) {
-      config.fields[index].active = isChecked;
-      saveConfigState();
-    }
-
-    function addNewField() {
-      const input = document.getElementById('newFieldName');
-      const val = input.value.trim();
-      if (!val) return;
-
-      config.fields.push({
-        id: 'custom_' + Date.now(),
-        label: val,
-        active: true
-      });
-
-      input.value = '';
-      saveConfigState();
-      renderAdminFields();
-    }
-
-    function removeCustomField(index) {
-      config.fields.splice(index, 1);
-      saveConfigState();
-      renderAdminFields();
-    }
-
-    function saveCompanyConfig() {
-      config.company = document.getElementById('cfgCompany').value;
-      document.getElementById('headerCompanyDisplay').innerText = config.company || 'SISTEMA DE CONTROLE DE PLANTÃO';
-      saveConfigState();
-    }
-
-    function saveAgentConfig() {
-      config.agent = document.getElementById('cfgAgent').value;
-      saveConfigState();
     }
 
     function saveConfigState() {
@@ -428,28 +378,58 @@
       badge.innerText = selectedFiles.length > 0 ? `${selectedFiles.length} foto(s) selecionada(s)` : '';
     }
 
+    /* GEOLOCALIZAÇÃO */
+    function getLocation() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) { resolve(null); return; }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => resolve(null),
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+        );
+      });
+    }
+
     async function processAndSaveGroup() {
+      const responsavel = document.getElementById('inpResponsavel').value.trim();
       const type = document.getElementById('regType').value;
-      const identifier = document.getElementById('inpIdentifier').value.trim() || (type === 'RONDA' ? 'Ronda Genérica' : 'Ocorrência sem Título');
+      const identifier = document.getElementById('inpIdentifier').value.trim();
       const priority = document.getElementById('inpPriority').value;
       const obs = document.getElementById('inpObservation').value.trim();
+
+      if (!responsavel) {
+        alert("Informe o nome do responsável pelo relatório antes de continuar.");
+        document.getElementById('inpResponsavel').focus();
+        return;
+      }
+
+      if (!identifier) {
+        alert("Informe o identificador da ronda/ocorrência antes de continuar.");
+        document.getElementById('inpIdentifier').focus();
+        return;
+      }
 
       if (selectedFiles.length === 0) {
         alert("Por favor, selecione ao menos uma foto.");
         return;
       }
 
+      config.agent = responsavel;
+      saveConfigState();
+
       const progressWrapper = document.getElementById('progressWrapper');
       const progressBarFill = document.getElementById('progressBarFill');
       const progressText = document.getElementById('progressText');
       progressWrapper.style.display = 'block';
+      progressText.innerText = 'Obtendo localização...';
 
       const timestamp = new Date();
+      const location = await getLocation();
 
       // Processamento em Paralelo para agilizar bastante a estampa
       let count = 0;
       const processPromises = selectedFiles.map(async (file) => {
-        const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp);
+        const stampedBase64 = await applyStampToImage(file, type, identifier, priority, timestamp, location);
         count++;
         const percent = Math.round((count / selectedFiles.length) * 100);
         progressBarFill.style.width = percent + '%';
@@ -470,6 +450,7 @@
         observation: obs,
         timestamp: timestamp.toLocaleString('pt-BR'),
         createdTimestamp: timestamp.getTime(),
+        location: location,
         images: processedImages
       };
 
@@ -490,7 +471,7 @@
     }
 
     /* ESTAMPA E OTIMIZAÇÃO DA IMAGEM PARA ALTA VELOCIDADE */
-    function applyStampToImage(file, type, identifier, priority, dateObj) {
+    function applyStampToImage(file, type, identifier, priority, dateObj, location) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -509,8 +490,10 @@
               width = MAX_WIDTH;
             }
 
+            const hasLocation = !!location;
+
             canvas.width = width;
-            const bannerHeight = Math.max(70, Math.round(height * 0.12));
+            const bannerHeight = Math.max(hasLocation ? 88 : 70, Math.round(height * (hasLocation ? 0.15 : 0.12)));
             canvas.height = height + bannerHeight;
 
             ctx.drawImage(img, 0, 0, width, height);
@@ -524,7 +507,7 @@
             }
 
             ctx.fillStyle = '#ffffff';
-            const fontSize = Math.max(13, Math.round(bannerHeight * 0.28));
+            const fontSize = Math.max(12, Math.round(bannerHeight * (hasLocation ? 0.20 : 0.28)));
             ctx.font = `bold ${fontSize}px sans-serif`;
 
             let line1 = [];
@@ -545,11 +528,21 @@
             }
 
             const paddingLeft = 16;
-            ctx.fillText(line1.join(' | '), paddingLeft, height + (bannerHeight * 0.42));
-            
-            ctx.fillStyle = '#cbd5e1';
-            ctx.font = `${Math.round(fontSize * 0.85)}px sans-serif`;
-            ctx.fillText(line2.join(' | '), paddingLeft, height + (bannerHeight * 0.78));
+
+            if (hasLocation) {
+              ctx.fillText(line1.join(' | '), paddingLeft, height + (bannerHeight * 0.30));
+              ctx.fillStyle = '#cbd5e1';
+              ctx.font = `${Math.round(fontSize * 0.85)}px sans-serif`;
+              ctx.fillText(line2.join(' | '), paddingLeft, height + (bannerHeight * 0.58));
+              ctx.fillStyle = '#fef9c3';
+              ctx.font = `${Math.round(fontSize * 0.80)}px sans-serif`;
+              ctx.fillText(`📍 GPS: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`, paddingLeft, height + (bannerHeight * 0.84));
+            } else {
+              ctx.fillText(line1.join(' | '), paddingLeft, height + (bannerHeight * 0.42));
+              ctx.fillStyle = '#cbd5e1';
+              ctx.font = `${Math.round(fontSize * 0.85)}px sans-serif`;
+              ctx.fillText(line2.join(' | '), paddingLeft, height + (bannerHeight * 0.78));
+            }
 
             // Qualidade ajustada em 0.80 para renderização rápida do PDF
             resolve(canvas.toDataURL('image/jpeg', 0.80));
@@ -597,6 +590,10 @@
             ? `<span class="badge badge-ronda">RONDA</span>`
             : `<span class="badge badge-${rec.priority.toLowerCase()}">${rec.priority}</span>`;
 
+          const locationHtml = rec.location
+            ? `<div class="record-location">📍 <a href="https://www.google.com/maps?q=${rec.location.lat},${rec.location.lng}" target="_blank" rel="noopener">Ver localização no mapa</a></div>`
+            : '';
+
           card.innerHTML = `
             <div class="record-header" onclick="toggleCardExpansion('${rec.id}')">
               <div class="record-header-title">
@@ -609,6 +606,7 @@
 
             <div id="body_${rec.id}" class="record-body ${isExpanded ? 'expanded' : ''}">
               ${rec.observation ? `<div class="record-obs"><strong>Obs:</strong> ${rec.observation}</div>` : ''}
+              ${locationHtml}
               
               <div class="image-grid" id="grid_${rec.id}">
                 ${rec.images.map(img => `
@@ -619,11 +617,14 @@
                 `).join('')}
               </div>
 
-              <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+                <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="openEditModal('${rec.id}')">
+                  ✏️ Editar
+                </button>
                 <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="triggerAddMorePhotos('${rec.id}')">
                   📷 Adicionar Fotos
                 </button>
-                <button class="btn btn-outline btn-sm" style="color: var(--red); border-color: var(--red);" onclick="deleteRecordGroup('${rec.id}')">
+                <button class="btn btn-outline btn-sm" style="flex: 1; color: var(--red); border-color: var(--red);" onclick="deleteRecordGroup('${rec.id}')">
                   🗑️ Excluir Card
                 </button>
               </div>
@@ -651,6 +652,69 @@
       }
     }
 
+    /* EDIÇÃO DE REGISTRO */
+    function openEditModal(recordId) {
+      const tx = db.transaction("records", "readonly");
+      tx.objectStore("records").get(recordId).onsuccess = (e) => {
+        const rec = e.target.result;
+        if (!rec) return;
+
+        editingRecordId = recordId;
+        document.getElementById('editIdentifier').value = rec.identifier;
+        document.getElementById('editObservation').value = rec.observation || '';
+
+        const priorityWrapper = document.getElementById('editPriorityWrapper');
+        if (rec.type === 'OCORRENCIA') {
+          priorityWrapper.style.display = 'block';
+          document.getElementById('editPriority').value = rec.priority;
+        } else {
+          priorityWrapper.style.display = 'none';
+        }
+
+        document.getElementById('editModalOverlay').style.display = 'flex';
+      };
+    }
+
+    function closeEditModal() {
+      editingRecordId = null;
+      document.getElementById('editModalOverlay').style.display = 'none';
+    }
+
+    function saveEditedRecord() {
+      if (!editingRecordId) return;
+      const targetId = editingRecordId;
+
+      const newIdentifier = document.getElementById('editIdentifier').value.trim();
+      const newObservation = document.getElementById('editObservation').value.trim();
+      const newPriority = document.getElementById('editPriority').value;
+
+      if (!newIdentifier) {
+        alert("O identificador não pode ficar vazio.");
+        return;
+      }
+
+      const tx = db.transaction("records", "readwrite");
+      const store = tx.objectStore("records");
+
+      store.get(targetId).onsuccess = (e) => {
+        const rec = e.target.result;
+        if (!rec) return;
+
+        rec.identifier = newIdentifier;
+        rec.observation = newObservation;
+        if (rec.type === 'OCORRENCIA') {
+          rec.priority = newPriority;
+        }
+
+        store.put(rec);
+      };
+
+      tx.oncomplete = () => {
+        closeEditModal();
+        renderDashboardCards();
+      };
+    }
+
     function triggerAddMorePhotos(recordId) {
       document.getElementById(`append_file_${recordId}`).click();
     }
@@ -663,6 +727,9 @@
       const progressBarFill = document.getElementById('progressBarFill');
       const progressText = document.getElementById('progressText');
       progressWrapper.style.display = 'block';
+      progressText.innerText = 'Obtendo localização...';
+
+      const location = await getLocation();
 
       const tx = db.transaction("records", "readwrite");
       const store = tx.objectStore("records");
@@ -675,7 +742,7 @@
 
         let count = 0;
         const appendPromises = files.map(async (file) => {
-          const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp);
+          const stampedBase64 = await applyStampToImage(file, record.type, record.identifier, record.priority, timestamp, location);
           count++;
           const percent = Math.round((count / files.length) * 100);
           progressBarFill.style.width = percent + '%';
@@ -688,6 +755,9 @@
 
         const newImages = await Promise.all(appendPromises);
         record.images.push(...newImages);
+        if (!record.location && location) {
+          record.location = location;
+        }
 
         const updateTx = db.transaction("records", "readwrite");
         updateTx.objectStore("records").put(record);
@@ -764,7 +834,7 @@
             <div class="pdf-meta-block">
               <div><strong>Responsável:</strong> ${config.agent || 'N/A'}</div>
               <div><strong>Emissão:</strong> ${formattedDate} às ${formattedTime}</div>
-              <div><strong>Sistema:</strong> GUARDIÃO PRO ${APP_VERSION}</div>
+              <div><strong>Sistema:</strong> GUARDIÃO IMAGENS ${APP_VERSION}</div>
             </div>
           </div>
         `;
@@ -780,6 +850,7 @@
 
           records.forEach((rec) => {
             const isOcorrencia = rec.type === 'OCORRENCIA';
+            const locationText = rec.location ? `${rec.location.lat.toFixed(5)}, ${rec.location.lng.toFixed(5)}` : null;
             
             html += `
               <div class="report-summary-card no-print">
@@ -790,6 +861,7 @@
                 <div class="report-summary-info">
                   <div><strong>Horário:</strong> ${rec.timestamp}</div>
                   ${rec.observation ? `<div><strong>Obs:</strong> ${rec.observation}</div>` : ''}
+                  ${locationText ? `<div><strong>Localização:</strong> ${locationText}</div>` : ''}
                   <div><strong>Fotos vinculadas:</strong> ${rec.images.length} foto(s) estampadas.</div>
                 </div>
               </div>
@@ -812,6 +884,12 @@
                     <strong>Horário do Registro:</strong> ${rec.timestamp}
                   </div>
 
+                  ${locationText ? `
+                    <div class="pdf-event-location">
+                      <strong>Localização (GPS):</strong> ${locationText}
+                    </div>
+                  ` : ''}
+
                   ${rec.observation ? `
                     <div class="pdf-event-obs">
                       <strong>Observações Técnicas:</strong> ${rec.observation}
@@ -833,7 +911,7 @@
 
         html += `
           <div class="pdf-footer pdf-only">
-            Documento emitido automaticamente via Guardião Pro - Sistema de Segurança Patrimonial
+            Documento emitido automaticamente via Guardião Imagens - Sistema de Segurança Patrimonial
           </div>
         `;
 
